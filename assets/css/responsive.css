@@ -1,0 +1,21 @@
+/* Baseline responsive rules — starter only. Subagent B: flesh this out (tablet breakpoint, spacing rescale, footer stacking, etc). */
+
+@media (max-width: 900px) {
+  .primary-nav {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    flex-direction: column;
+    background: var(--color-bg);
+    border-bottom: 1px solid var(--color-line);
+    padding: var(--space-4) var(--container-pad);
+    display: none;
+  }
+  .primary-nav.is-open { display: flex; }
+  .nav-toggle { display: flex; }
+
+  .branch-columns { grid-template-columns: 1fr; }
+  .program-grid { grid-template-columns: 1fr; }
+  .site-footer__inner { grid-template-columns: 1fr; gap: var(--space-6); }
+}

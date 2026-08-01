@@ -1,0 +1,240 @@
+/* Page layout: header, sections, grids. Content-area styling only — the helix visual owns its own layer (see helix.css). */
+
+.container {
+  max-width: var(--container-max);
+  margin: 0 auto;
+  padding: 0 var(--container-pad);
+  position: relative;
+  z-index: 2;
+}
+
+/* ---------- Header ---------- */
+.site-header {
+  position: fixed;
+  inset: 0 0 auto 0;
+  z-index: 100;
+  background: color-mix(in srgb, var(--color-bg) 88%, transparent);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--color-line);
+}
+.site-header__inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: var(--space-4);
+  padding-bottom: var(--space-4);
+}
+.site-header__mark {
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  text-decoration: none;
+  letter-spacing: 0.01em;
+}
+.primary-nav {
+  display: flex;
+  gap: var(--space-6);
+}
+.primary-nav a {
+  text-decoration: none;
+  font-size: var(--fs-small);
+  color: var(--color-ink-soft);
+  transition: color var(--dur-fast) var(--ease-elegant);
+}
+.primary-nav a:hover { color: var(--color-ink); }
+
+.nav-toggle {
+  display: none;
+  flex-direction: column;
+  justify-content: center;
+  gap: 5px;
+  width: 40px;
+  height: 40px;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+.nav-toggle span {
+  display: block;
+  width: 100%;
+  height: 1px;
+  background: var(--color-ink);
+}
+
+/* ---------- Section rhythm ---------- */
+main > section {
+  position: relative;
+  padding: var(--space-10) 0;
+  overflow: hidden;
+}
+
+/* ---------- Hero ---------- */
+.hero {
+  min-height: 100svh;
+  display: flex;
+  align-items: center;
+  padding-top: var(--space-9);
+}
+.hero__inner { text-align: center; max-width: 780px; margin: 0 auto; }
+.hero__title { margin-bottom: var(--space-5); }
+.hero__lede {
+  font-size: 1.15rem;
+  color: var(--color-ink-soft);
+  max-width: 46ch;
+  margin: 0 auto var(--space-8);
+}
+.scroll-cue {
+  display: inline-block;
+  width: 1px;
+  height: 56px;
+  background: var(--color-line-strong);
+  position: relative;
+}
+.scroll-cue span {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  width: 5px; height: 5px;
+  margin-left: -2.5px;
+  border-radius: 50%;
+  background: var(--color-gold-deep);
+  animation: scroll-cue-dot 1.8s var(--ease-elegant) infinite;
+}
+@keyframes scroll-cue-dot {
+  0% { top: 0; opacity: 0; }
+  20% { opacity: 1; }
+  100% { top: 100%; opacity: 0; }
+}
+
+/* ---------- Branches ---------- */
+.branches__intro {
+  text-align: center;
+  max-width: 640px;
+  margin: 0 auto var(--space-9);
+}
+.branch-columns {
+  max-width: var(--container-max);
+  margin: 0 auto;
+  padding: 0 var(--container-pad);
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-8);
+  position: relative;
+  z-index: 2;
+}
+.branch { min-width: 0; }
+.branch__inner {
+  padding: var(--space-6);
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius);
+  background: color-mix(in srgb, var(--color-bg) 60%, transparent);
+}
+.branch--gold .eyebrow { color: var(--color-gold-deep); }
+.branch--indigo .eyebrow { color: var(--color-indigo); }
+.branch--gold h3 { border-bottom: 2px solid var(--color-gold); padding-bottom: var(--space-3); }
+.branch--indigo h3 { border-bottom: 2px solid var(--color-indigo); padding-bottom: var(--space-3); }
+.branch__summary { color: var(--color-ink-soft); }
+
+.timeline {
+  list-style: none;
+  margin: var(--space-6) 0 0;
+  padding: 0;
+  border-left: 1px solid var(--color-line-strong);
+}
+.timeline__item {
+  position: relative;
+  padding: 0 0 var(--space-5) var(--space-6);
+}
+.timeline__item::before {
+  content: "";
+  position: absolute;
+  left: -4.5px;
+  top: 6px;
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: var(--color-bg);
+  border: 2px solid var(--color-ink-faint);
+}
+.branch--gold .timeline__item::before { border-color: var(--color-gold-deep); }
+.branch--indigo .timeline__item::before { border-color: var(--color-indigo); }
+.timeline__year {
+  display: block;
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: var(--fs-h3);
+  margin-bottom: var(--space-1);
+}
+.timeline__item p { color: var(--color-ink-soft); font-size: var(--fs-small); }
+.timeline__item--placeholder { opacity: 0.6; font-style: italic; }
+
+/* ---------- Convergence ---------- */
+.convergence__inner { text-align: center; max-width: 720px; margin: 0 auto; }
+.convergence__lede { color: var(--color-ink-soft); margin: 0 auto var(--space-8); max-width: 60ch; }
+
+.stat-row {
+  display: flex;
+  justify-content: center;
+  gap: var(--space-9);
+  margin: 0 0 var(--space-9);
+  flex-wrap: wrap;
+}
+.stat dt {
+  font-family: var(--font-display);
+  font-size: var(--fs-h1);
+  font-weight: 600;
+  background: linear-gradient(90deg, var(--color-gold-deep), var(--color-indigo));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.stat dd {
+  margin: 0;
+  font-size: var(--fs-small);
+  color: var(--color-ink-faint);
+}
+
+.program-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-6);
+  text-align: left;
+}
+.program-card {
+  padding: var(--space-6);
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius);
+}
+.program-card h3 { font-size: var(--fs-h3); margin-bottom: var(--space-2); }
+.program-card p { color: var(--color-ink-soft); font-size: var(--fs-small); }
+
+/* ---------- Get involved ---------- */
+.get-involved { text-align: center; background: var(--color-bg-alt); }
+.get-involved__inner { max-width: 640px; margin: 0 auto; }
+.cta-row {
+  display: flex;
+  gap: var(--space-4);
+  justify-content: center;
+  margin-top: var(--space-6);
+}
+
+/* ---------- Footer ---------- */
+.site-footer {
+  background: var(--color-indigo-deep);
+  color: var(--color-bg-alt);
+  padding: var(--space-8) 0 var(--space-5);
+}
+.site-footer a { text-decoration: none; }
+.site-footer__inner {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr;
+  gap: var(--space-6);
+  padding-bottom: var(--space-7);
+  border-bottom: 1px solid rgba(250, 247, 242, 0.15);
+}
+.site-footer .eyebrow { color: rgba(250, 247, 242, 0.5); }
+.site-footer__mark { font-family: var(--font-display); font-size: 1.2rem; margin-bottom: var(--space-2); }
+.site-footer__tag { color: rgba(250, 247, 242, 0.65); font-size: var(--fs-small); }
+.site-footer__bottom {
+  padding-top: var(--space-5);
+  font-size: var(--fs-small);
+  color: rgba(250, 247, 242, 0.5);
+}
