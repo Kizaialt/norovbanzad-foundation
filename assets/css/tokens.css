@@ -5,7 +5,7 @@
   --color-bg-alt: #f1ebe1;
   --color-ink: #1b1b22;
   --color-ink-soft: #4a4a55;
-  --color-ink-faint: #8a8a95;
+  --color-ink-faint: #6e6e78; /* ~4.7:1 on --color-bg — meets WCAG AA for the small text (eyebrows, stat labels) that uses it */
 
   --color-gold: #c9a24b;
   --color-gold-soft: #e8d9b0;

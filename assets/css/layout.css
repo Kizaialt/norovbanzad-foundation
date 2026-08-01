@@ -35,6 +35,8 @@
   gap: var(--space-6);
 }
 .primary-nav a {
+  display: inline-block;
+  padding: var(--space-2) 0;
   text-decoration: none;
   font-size: var(--fs-small);
   color: var(--color-ink-soft);
@@ -67,6 +69,13 @@ main > section {
   overflow: hidden;
 }
 
+/* Anchor targets (nav links, skip-link) land below the fixed header instead of under it */
+main > section,
+.branch,
+.site-footer {
+  scroll-margin-top: var(--space-8);
+}
+
 /* ---------- Hero ---------- */
 .hero {
   min-height: 100svh;
@@ -86,7 +95,10 @@ main > section {
   display: inline-block;
   width: 1px;
   height: 56px;
+  padding: 0 var(--space-5);
+  margin: 0 calc(var(--space-5) * -1);
   background: var(--color-line-strong);
+  background-clip: content-box;
   position: relative;
 }
 .scroll-cue span {

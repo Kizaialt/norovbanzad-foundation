@@ -1,21 +1,105 @@
-/* Baseline responsive rules — starter only. Subagent B: flesh this out (tablet breakpoint, spacing rescale, footer stacking, etc). */
+/* Responsive rules — tablet (~1024px) down through small mobile (~375px).
+   Content-area layout only; the helix visual manages its own breakpoints in helix.css. */
 
-@media (max-width: 900px) {
+/* ==========================================================================
+   Tablet — ~1024px and down
+   Section rhythm and grid gaps tighten; two-column layouts still hold.
+   ========================================================================== */
+@media (max-width: 1024px) {
+  main > section { padding: var(--space-9) 0; }
+
+  .hero { padding-top: var(--space-8); }
+  .hero__lede { margin-bottom: var(--space-7); }
+
+  .branches__intro { margin-bottom: var(--space-8); }
+  .branch-columns { gap: var(--space-6); }
+  .branch__inner { padding: var(--space-5); }
+
+  .convergence__lede { margin-bottom: var(--space-7); }
+  .stat-row { gap: var(--space-7); margin-bottom: var(--space-8); }
+
+  .program-grid { grid-template-columns: repeat(2, 1fr); gap: var(--space-5); }
+
+  .site-footer__inner { grid-template-columns: 1.4fr 1fr 1fr; gap: var(--space-5); }
+}
+
+/* ==========================================================================
+   Small tablet / large phone — ~860px and down
+   Nav collapses to the toggle; the two history branches stack so each
+   column keeps a comfortable reading width instead of squeezing side by side.
+   ========================================================================== */
+@media (max-width: 860px) {
   .primary-nav {
     position: absolute;
     top: 100%;
     left: 0;
     right: 0;
     flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-3);
     background: var(--color-bg);
     border-bottom: 1px solid var(--color-line);
-    padding: var(--space-4) var(--container-pad);
+    padding: var(--space-4) var(--container-pad) var(--space-5);
     display: none;
   }
   .primary-nav.is-open { display: flex; }
   .nav-toggle { display: flex; }
 
-  .branch-columns { grid-template-columns: 1fr; }
-  .program-grid { grid-template-columns: 1fr; }
-  .site-footer__inner { grid-template-columns: 1fr; gap: var(--space-6); }
+  .branch-columns { grid-template-columns: 1fr; gap: var(--space-7); }
+
+  .site-footer__inner { grid-template-columns: 1fr 1fr; }
+  .site-footer__col:first-child { grid-column: 1 / -1; }
+}
+
+/* ==========================================================================
+   Mobile — ~640px and down
+   Single-column throughout; type and spacing settle to compact values;
+   the stat row and CTAs stack for narrow viewports.
+   ========================================================================== */
+@media (max-width: 640px) {
+  main > section { padding: var(--space-8) 0; }
+
+  .hero { padding-top: var(--space-7); }
+  .hero__lede { font-size: 1.05rem; margin-bottom: var(--space-6); }
+  .scroll-cue { height: 40px; }
+
+  .branches__intro { margin-bottom: var(--space-6); }
+  .branch__inner { padding: var(--space-5) var(--space-4); }
+  .timeline { margin-top: var(--space-5); }
+  .timeline__item { padding-left: var(--space-5); }
+
+  .convergence__lede { margin-bottom: var(--space-6); }
+  .stat-row {
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-5);
+    margin-bottom: var(--space-7);
+  }
+
+  .program-grid { grid-template-columns: 1fr; gap: var(--space-4); }
+
+  .cta-row { flex-direction: column; align-items: stretch; }
+  .cta-row .btn { text-align: center; }
+
+  .site-footer { padding: var(--space-7) 0 var(--space-4); }
+  .site-footer__inner { grid-template-columns: 1fr; gap: var(--space-5); text-align: left; }
+  .site-footer__col:first-child { grid-column: auto; }
+}
+
+/* ==========================================================================
+   Small mobile — ~400px and down
+   Final spacing rescale for narrow phones (iPhone SE and similar widths).
+   ========================================================================== */
+@media (max-width: 400px) {
+  .site-header__mark { font-size: 1rem; }
+
+  .hero__title { margin-bottom: var(--space-4); }
+  .hero__lede { max-width: none; }
+
+  .branch__inner { padding: var(--space-4); }
+  .branch__summary { font-size: var(--fs-small); }
+
+  .program-card { padding: var(--space-5); }
+
+  .stat dt { font-size: var(--fs-h2); }
 }
