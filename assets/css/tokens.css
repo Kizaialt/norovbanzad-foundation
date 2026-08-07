@@ -15,6 +15,14 @@
   --color-indigo-soft: #5a6a93;
   --color-indigo-deep: #161d30;
 
+  /* Desaturated, high-luminance tints for the ambient DNA-strand line only -- kept separate
+     from the vivid brand accents above (used for headings/buttons/eyebrows) so the strand can
+     stay quiet at full opacity instead of relying on transparency, which read as washed-out
+     and gap-like right where two strands are supposed to visibly connect. */
+  --color-strand-neutral: #c2bcae;
+  --color-strand-gold: #d8c193;
+  --color-strand-indigo: #9aa6c0;
+
   --color-maroon: #7a2e2e;
   --color-maroon-soft: #a85d5d;
 

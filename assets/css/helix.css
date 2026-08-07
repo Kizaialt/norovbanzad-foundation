@@ -32,19 +32,24 @@
 
 .helix-strand {
   fill: none;
-  stroke-width: 1.3;
+  stroke-width: 1.1;
   vector-effect: non-scaling-stroke; /* keep the line ~1-1.5px regardless of viewBox scale */
   stroke-linecap: round;
   stroke-linejoin: round;
-  filter: blur(0.4px); /* softens the vector edge slightly -- reads as a quiet ink line rather
-                           than a crisp, harsh stroke; small enough to stay imperceptible as
-                           "blur" on its own */
+  opacity: 1;
+  /* Quiet is a property of *color and motion*, not transparency: these strands render at full
+     opacity in desaturated, high-luminance tints (--color-strand-*, tokens.css) rather than
+     vivid brand colors dimmed down. Alpha-blending a bright color into a light background
+     antialiases into a soft, slightly muddy edge -- and stacking that with a fade-in mask
+     right at a seam (removed below) made the joint itself read as a near-blank gap instead of
+     a connection. A muted color at full opacity stays crisp and legible while still receding
+     behind the page's actual content. */
 }
 
-/* ---------- Hero: single backbone, low-opacity, gently breathing ---------- */
+/* ---------- Hero: single backbone, gently breathing ---------- */
 
 .helix-strand--hero {
-  opacity: 0.35;
+  stroke: var(--color-strand-neutral);
 }
 
 #helix-hero .helix-svg {
@@ -66,21 +71,10 @@
 /* ---------- Branches: gold/indigo fork + scroll-revealed rungs ---------- */
 
 .helix-strand--gold {
-  stroke: var(--color-gold);
-  opacity: 0.5;
+  stroke: var(--color-strand-gold);
 }
 .helix-strand--indigo {
-  stroke: var(--color-indigo);
-  opacity: 0.5;
-}
-
-/* Fade the branches strand+rungs in from the top instead of snapping straight to full
-   opacity right at the seam -- softens what would otherwise read as an abrupt, saturated
-   line suddenly starting exactly where the quiet hero strand ends. Mirrors the fade-out mask
-   convergence already uses at its own bottom, below. */
-#helix-branches .helix-svg {
-  -webkit-mask-image: linear-gradient(to bottom, transparent 0%, #000 10%);
-          mask-image: linear-gradient(to bottom, transparent 0%, #000 10%);
+  stroke: var(--color-strand-indigo);
 }
 
 /* Each timeline item gets a rung split into two halves that "unzip" outward
@@ -110,9 +104,6 @@
 
 /* ---------- Branches, mobile fallback: single accent strand + ticks ---------- */
 
-.helix-strand--mobile {
-  opacity: 0.42;
-}
 
 .helix-tick {
   fill: none;
@@ -138,11 +129,6 @@
 }
 
 /* ---------- Convergence: braid resolving into one strand ---------- */
-
-#helix-convergence .helix-strand--gold,
-#helix-convergence .helix-strand--indigo {
-  opacity: 0.55;
-}
 
 .helix-braid-node {
   fill: var(--color-line-strong);

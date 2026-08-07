@@ -208,21 +208,19 @@
     container.innerHTML = '';
 
     var svg = buildSvgRoot('helix-svg--hero');
-    var defs = svgEl('defs');
-    var grad = svgEl('linearGradient', { id: 'helix-hero-grad', x1: '0', y1: '0', x2: '0', y2: '1' });
-    grad.appendChild(svgEl('stop', { offset: '0%', 'stop-color': 'var(--color-gold-deep)' }));
-    grad.appendChild(svgEl('stop', { offset: '100%', 'stop-color': 'var(--color-indigo)' }));
-    defs.appendChild(grad);
-    svg.appendChild(defs);
 
+    // Flat, single muted tone (--color-strand-neutral, tokens.css) rather than a gold-to-indigo
+    // gradient: this hero strand represents "one life" before it differentiates into the gold
+    // and indigo identities in the branches section, so it reads more calmly -- and more on
+    // theme -- as undifferentiated than as a strand that's already halfway between two colors.
     // freq 1.5 => 3 half-periods, phase 0 => pinned to x=50 at both ends -- sampled over the
     // exact visible span (0-100) so the pin lands on the real bottom edge, where this strand
     // has to meet the branches strand's fixed start point. edgeTaper flattens the approach to
     // vertical at both ends (see sinePoints doc) so it meets branches' also-vertical entry
-    // smoothly instead of at an angle. Bleed is added separately below.
-    var pts = withBleed(sinePoints({ x0: 50, y0: 0, y1: 100, amp: 5, freq: 1.5, phase: 0, steps: 48, edgeTaper: 0.16 }), 3);
+    // smoothly instead of at an angle. Bleed is added separately below. A gentler amplitude
+    // (3.5 rather than 5) keeps the motion calm -- quiet enough not to pull the eye.
+    var pts = withBleed(sinePoints({ x0: 50, y0: 0, y1: 100, amp: 3.5, freq: 1.5, phase: 0, steps: 48, edgeTaper: 0.16 }), 3);
     var path = svgEl('path', { d: smoothPathD(pts), class: 'helix-strand helix-strand--hero', fill: 'none' });
-    path.style.stroke = 'url(#helix-hero-grad)';
     svg.appendChild(path);
 
     container.appendChild(svg);
@@ -275,8 +273,8 @@
 
     // Bleed only past the bottom (index -1): the top already reads as continuous into the hero
     // strand via the flat x=50 lead-in built into forkedStrandPoints, with no cut edge there.
-    var goldPts = withBleed(forkedStrandPoints(layout.goldX, forkY, { amp: 2, halfPeriods: 3 }), 3).slice(1);
-    var indigoPts = withBleed(forkedStrandPoints(layout.indigoX, forkY, { amp: 2, halfPeriods: 4 }), 3).slice(1);
+    var goldPts = withBleed(forkedStrandPoints(layout.goldX, forkY, { amp: 1.3, halfPeriods: 3 }), 3).slice(1);
+    var indigoPts = withBleed(forkedStrandPoints(layout.indigoX, forkY, { amp: 1.3, halfPeriods: 4 }), 3).slice(1);
 
     var goldPath = svgEl('path', { d: smoothPathD(goldPts), class: 'helix-strand helix-strand--gold', fill: 'none' });
     var indigoPath = svgEl('path', { d: smoothPathD(indigoPts), class: 'helix-strand helix-strand--indigo', fill: 'none' });
@@ -314,7 +312,7 @@
     var grad = svgEl('linearGradient', { id: gradId, x1: '0', y1: '0', x2: '0', y2: '1' });
     var b = layout.boundaryY;
     var s1 = clamp(b - 10, 0, 100), s2 = clamp(b + 10, 0, 100);
-    [[0, '--color-gold-deep'], [s1, '--color-gold-deep'], [s2, '--color-indigo'], [100, '--color-indigo']].forEach(function (pair) {
+    [[0, '--color-strand-gold'], [s1, '--color-strand-gold'], [s2, '--color-strand-indigo'], [100, '--color-strand-indigo']].forEach(function (pair) {
       grad.appendChild(svgEl('stop', { offset: pair[0] + '%', 'stop-color': 'var(' + pair[1] + ')' }));
     });
     defs.appendChild(grad);
@@ -323,7 +321,7 @@
     // freq 2 => 4 half-periods, phase 0 => pinned to x=50 at both ends -- see renderHero for
     // why this samples the exact visible span, tapers to a flat approach at each end, and
     // bleeds separately rather than overscanning.
-    var pts = withBleed(sinePoints({ x0: 50, y0: 0, y1: 100, amp: 3.5, freq: 2, phase: 0, steps: 48, edgeTaper: 0.16 }), 3);
+    var pts = withBleed(sinePoints({ x0: 50, y0: 0, y1: 100, amp: 2.5, freq: 2, phase: 0, steps: 48, edgeTaper: 0.16 }), 3);
     var path = svgEl('path', { d: smoothPathD(pts), class: 'helix-strand helix-strand--mobile', fill: 'none' });
     path.style.stroke = 'url(#' + gradId + ')';
     svg.appendChild(path);
@@ -414,7 +412,7 @@
     // of the seam issue fixed above. Widening it gives the same zero-slope start more room to
     // stay flat before curving away, without changing when the braid oscillation (t2-t4) kicks in.
     var t1 = 0.24, t2 = 0.3, t3 = 0.6, t4 = 0.72;
-    var ampMax = 10, periodsVisible = 2.5;
+    var ampMax = 6, periodsVisible = 2.5;
     var freq = periodsVisible / (t3 - t2);
 
     var goldPts = [], indigoPts = [];
