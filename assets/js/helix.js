@@ -85,13 +85,28 @@
   // half-integer/integer freq, x(0) and x(1) both land exactly on x0 --
   // handy for pinning a strand's endpoints so adjoining sections meet
   // without a visible seam.
+  //
+  // Matching x(0)/x(1) to the neighboring section's entry point (see withBleed below) is only
+  // half of "meets without a seam" -- a sine wave has *maximum* slope exactly where it crosses
+  // zero, so even with the position pinned exactly, the curve arrives at a sharp angle while
+  // whatever it's meeting (typically another curve easing in from flat) arrives vertical. That
+  // reads as a visible kink even at 0 position-error. `edgeTaper` (0-0.5, fraction of the [0,1]
+  // domain at each end) multiplies the wobble by a smoothstep envelope that eases amplitude --
+  // and, because smoothstep's own derivative is *also* zero at its ends, the wobble's *slope*
+  // too -- down to exactly zero right at the pinned edge. The curve therefore flattens into a
+  // straight vertical line as it approaches the seam, matching a flat entry on the other side
+  // by construction instead of by a coincidental frequency choice.
   function sinePoints(opts) {
     var steps = opts.steps || 48;
+    var edgeTaper = opts.edgeTaper || 0;
     var pts = [];
     for (var i = 0; i <= steps; i++) {
       var t = i / steps;
       var y = opts.y0 + (opts.y1 - opts.y0) * t;
-      var x = opts.x0 + opts.amp * Math.sin(opts.freq * Math.PI * 2 * t + (opts.phase || 0));
+      var envelope = edgeTaper
+        ? smoothstep(0, edgeTaper, t) * (1 - smoothstep(1 - edgeTaper, 1, t))
+        : 1;
+      var x = opts.x0 + opts.amp * envelope * Math.sin(opts.freq * Math.PI * 2 * t + (opts.phase || 0));
       pts.push([x, y]);
     }
     return pts;
@@ -143,10 +158,18 @@
       [(50 + targetX) / 2, forkY * 0.78],
       [targetX, forkY]
     ];
+    // Tapers to zero amplitude *and* zero slope by tl=1 (last 30% of this span) -- same
+    // reasoning as sinePoints' edgeTaper -- so the strand flattens to vertical right where it
+    // has to meet convergence's entry, which is already vertical there via its own smoothstep
+    // envelope (see renderConvergence). Only the trailing edge needs this: the leading edge
+    // is already flat by construction (the [50,-2]/[50,forkY*0.4] control points above share
+    // x=50, so the curve is vertical through the whole span between them).
+    var tailTaper = 0.3;
     for (var i = 1; i <= steps; i++) {
       var tl = i / steps;
       var y = forkY + (100 - forkY) * tl;
-      var x = targetX + amp * Math.sin(halfPeriods * Math.PI * tl);
+      var envelope = 1 - smoothstep(1 - tailTaper, 1, tl);
+      var x = targetX + amp * envelope * Math.sin(halfPeriods * Math.PI * tl);
       pts.push([x, y]);
     }
     return pts;
@@ -194,8 +217,10 @@
 
     // freq 1.5 => 3 half-periods, phase 0 => pinned to x=50 at both ends -- sampled over the
     // exact visible span (0-100) so the pin lands on the real bottom edge, where this strand
-    // has to meet the branches strand's fixed start point. Bleed is added separately below.
-    var pts = withBleed(sinePoints({ x0: 50, y0: 0, y1: 100, amp: 5, freq: 1.5, phase: 0, steps: 48 }), 3);
+    // has to meet the branches strand's fixed start point. edgeTaper flattens the approach to
+    // vertical at both ends (see sinePoints doc) so it meets branches' also-vertical entry
+    // smoothly instead of at an angle. Bleed is added separately below.
+    var pts = withBleed(sinePoints({ x0: 50, y0: 0, y1: 100, amp: 5, freq: 1.5, phase: 0, steps: 48, edgeTaper: 0.16 }), 3);
     var path = svgEl('path', { d: smoothPathD(pts), class: 'helix-strand helix-strand--hero', fill: 'none' });
     path.style.stroke = 'url(#helix-hero-grad)';
     svg.appendChild(path);
@@ -296,8 +321,9 @@
     svg.appendChild(defs);
 
     // freq 2 => 4 half-periods, phase 0 => pinned to x=50 at both ends -- see renderHero for
-    // why this samples the exact visible span and bleeds separately rather than overscanning.
-    var pts = withBleed(sinePoints({ x0: 50, y0: 0, y1: 100, amp: 3.5, freq: 2, phase: 0, steps: 48 }), 3);
+    // why this samples the exact visible span, tapers to a flat approach at each end, and
+    // bleeds separately rather than overscanning.
+    var pts = withBleed(sinePoints({ x0: 50, y0: 0, y1: 100, amp: 3.5, freq: 2, phase: 0, steps: 48, edgeTaper: 0.16 }), 3);
     var path = svgEl('path', { d: smoothPathD(pts), class: 'helix-strand helix-strand--mobile', fill: 'none' });
     path.style.stroke = 'url(#' + gradId + ')';
     svg.appendChild(path);
@@ -381,7 +407,13 @@
     var svg = buildSvgRoot('helix-svg--convergence');
 
     var steps = 90;
-    var t1 = 0.16, t2 = 0.24, t3 = 0.56, t4 = 0.7;
+    // t1 governs how much room baseG/baseI get to travel from the branches' entry X back to
+    // center. Its slope is exactly zero at t=0 (smoothstep's edge property), but with the
+    // original t1=0.16 that full swing still had to happen over a short span, so it picked up
+    // visible curvature within the first couple of percent -- a softer, but same-shaped, echo
+    // of the seam issue fixed above. Widening it gives the same zero-slope start more room to
+    // stay flat before curving away, without changing when the braid oscillation (t2-t4) kicks in.
+    var t1 = 0.24, t2 = 0.3, t3 = 0.6, t4 = 0.72;
     var ampMax = 10, periodsVisible = 2.5;
     var freq = periodsVisible / (t3 - t2);
 
