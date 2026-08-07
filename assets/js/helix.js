@@ -177,24 +177,34 @@
 
   function measureBranches() {
     var section = document.getElementById('branches');
+    // Measure against `stage` (the actual .helix-stage div the SVG is injected into), not
+    // `section`. `.helix-stage` is `position:absolute; inset:0` inside `section`, and per the
+    // CSS containing-block spec that positions it against `section`'s *padding* box -- which is
+    // shorter than `section.getBoundingClientRect()` (the border box) whenever the section has
+    // vertical padding, as `main > section` always does. Using the section's rect as the 0-100%
+    // reference therefore mapped every rung/strand position onto the wrong box and made them
+    // drift away from the real column/timeline positions. Measuring `stage` directly is correct
+    // by construction -- it's exactly the box the SVG stretches to fill -- so this stays correct
+    // no matter how the section's padding (or any other spacing token) changes later.
+    var stage = document.getElementById('helix-branches');
     var goldCol = document.getElementById('branch-norovbanzad');
     var indigoCol = document.getElementById('branch-foundation');
-    if (!section || !goldCol || !indigoCol) return null;
+    if (!section || !stage || !goldCol || !indigoCol) return null;
 
-    var sectionRect = section.getBoundingClientRect();
-    if (!sectionRect.width || !sectionRect.height) return null;
+    var stageRect = stage.getBoundingClientRect();
+    if (!stageRect.width || !stageRect.height) return null;
 
     var goldRect = goldCol.getBoundingClientRect();
     var indigoRect = indigoCol.getBoundingClientRect();
 
-    var goldX = clamp(((goldRect.left + goldRect.width / 2) - sectionRect.left) / sectionRect.width * 100, 5, 95);
-    var indigoX = clamp(((indigoRect.left + indigoRect.width / 2) - sectionRect.left) / sectionRect.width * 100, 5, 95);
-    var boundaryY = clamp(((indigoRect.top) - sectionRect.top) / sectionRect.height * 100, 5, 95);
+    var goldX = clamp(((goldRect.left + goldRect.width / 2) - stageRect.left) / stageRect.width * 100, 5, 95);
+    var indigoX = clamp(((indigoRect.left + indigoRect.width / 2) - stageRect.left) / stageRect.width * 100, 5, 95);
+    var boundaryY = clamp(((indigoRect.top) - stageRect.top) / stageRect.height * 100, 5, 95);
 
     var itemNodes = Array.prototype.slice.call(section.querySelectorAll('.timeline__item'));
     var items = itemNodes.map(function (node) {
       var r = node.getBoundingClientRect();
-      var y = clamp(((r.top + r.height / 2) - sectionRect.top) / sectionRect.height * 100, 2, 98);
+      var y = clamp(((r.top + r.height / 2) - stageRect.top) / stageRect.height * 100, 2, 98);
       var col = node.closest('.branch--gold') ? 'gold' : 'indigo';
       return { el: node, y: y, col: col };
     });
