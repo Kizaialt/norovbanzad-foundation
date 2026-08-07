@@ -97,11 +97,41 @@
     return pts;
   }
 
+  // Extends a polyline a short distance past each end, continuing the local tangent direction,
+  // and returns the new point list. Used to keep a curve's exact pin points (see sinePoints'
+  // doc above) at the *visible* clip edges of a .helix-stage -- y=0 and y=100 -- while still
+  // giving the stroke a soft bleed past those edges instead of reading as a hard cut. Sampling
+  // the pinned math directly over an overscanned range (e.g. y -2..102) instead of doing this
+  // is what caused the original seam bug: a zero-crossing guaranteed at the *overscan* edge
+  // doesn't land on the *visible* edge, so adjoining sections' strands met a fraction of a
+  // percent off target -- small, but visible once zoomed in, and only made worse by any
+  // animation applied to the endpoint (see the hero breathe keyframes in helix.css, which are
+  // anchored at the seam point for the same reason). Doing the bleed as a separate step after
+  // the pinned points are generated means it can never reintroduce that drift.
+  function withBleed(points, bleedAmt) {
+    if (points.length < 2 || !bleedAmt) return points;
+    function extend(a, b, amt) {
+      var dx = a[0] - b[0], dy = a[1] - b[1];
+      var len = Math.hypot(dx, dy) || 1;
+      return [a[0] + (dx / len) * amt, a[1] + (dy / len) * amt];
+    }
+    var lead = extend(points[0], points[1], bleedAmt);
+    var trail = extend(points[points.length - 1], points[points.length - 2], bleedAmt);
+    return [lead].concat(points, [trail]);
+  }
+
   // Builds the points for a strand that starts centered (x=50) at the top
   // of the branches section, curves out toward targetX by forkY, then
   // continues down with a gentle wobble that is pinned back to exactly
   // targetX at the very bottom (so the convergence section's strand,
   // which starts at the same targetX, meets it with no jump).
+  //
+  // The leading [50,-2] / [50, forkY*0.4] control points both sit at x=50, so the visible top
+  // edge (y=0, which falls between them) is exactly x=50 too -- already correctly pinned to
+  // hero's fixed bottom endpoint. The wobble loop below is sampled up to the exact visible
+  // bottom edge (y=100), not an overscanned y=102, for the same reason described on withBleed:
+  // pinning a zero-crossing to an overscan edge doesn't pin it to the edge that actually has to
+  // line up with convergence's strand. Bleed past y=100 is added by the caller via withBleed.
   function forkedStrandPoints(targetX, forkY, opts) {
     opts = opts || {};
     var amp = opts.amp != null ? opts.amp : 2;
@@ -115,7 +145,7 @@
     ];
     for (var i = 1; i <= steps; i++) {
       var tl = i / steps;
-      var y = forkY + (102 - forkY) * tl;
+      var y = forkY + (100 - forkY) * tl;
       var x = targetX + amp * Math.sin(halfPeriods * Math.PI * tl);
       pts.push([x, y]);
     }
@@ -162,8 +192,10 @@
     defs.appendChild(grad);
     svg.appendChild(defs);
 
-    // freq 1.5 => 3 half-periods, phase 0 => pinned to x=50 at both ends.
-    var pts = sinePoints({ x0: 50, y0: -2, y1: 102, amp: 5, freq: 1.5, phase: 0, steps: 48 });
+    // freq 1.5 => 3 half-periods, phase 0 => pinned to x=50 at both ends -- sampled over the
+    // exact visible span (0-100) so the pin lands on the real bottom edge, where this strand
+    // has to meet the branches strand's fixed start point. Bleed is added separately below.
+    var pts = withBleed(sinePoints({ x0: 50, y0: 0, y1: 100, amp: 5, freq: 1.5, phase: 0, steps: 48 }), 3);
     var path = svgEl('path', { d: smoothPathD(pts), class: 'helix-strand helix-strand--hero', fill: 'none' });
     path.style.stroke = 'url(#helix-hero-grad)';
     svg.appendChild(path);
@@ -216,8 +248,10 @@
     var svg = buildSvgRoot('helix-svg--branches');
     var forkY = 12;
 
-    var goldPts = forkedStrandPoints(layout.goldX, forkY, { amp: 2, halfPeriods: 3 });
-    var indigoPts = forkedStrandPoints(layout.indigoX, forkY, { amp: 2, halfPeriods: 4 });
+    // Bleed only past the bottom (index -1): the top already reads as continuous into the hero
+    // strand via the flat x=50 lead-in built into forkedStrandPoints, with no cut edge there.
+    var goldPts = withBleed(forkedStrandPoints(layout.goldX, forkY, { amp: 2, halfPeriods: 3 }), 3).slice(1);
+    var indigoPts = withBleed(forkedStrandPoints(layout.indigoX, forkY, { amp: 2, halfPeriods: 4 }), 3).slice(1);
 
     var goldPath = svgEl('path', { d: smoothPathD(goldPts), class: 'helix-strand helix-strand--gold', fill: 'none' });
     var indigoPath = svgEl('path', { d: smoothPathD(indigoPts), class: 'helix-strand helix-strand--indigo', fill: 'none' });
@@ -261,8 +295,9 @@
     defs.appendChild(grad);
     svg.appendChild(defs);
 
-    // freq 2 => 4 half-periods, phase 0 => pinned to x=50 at both ends.
-    var pts = sinePoints({ x0: 50, y0: -2, y1: 102, amp: 3.5, freq: 2, phase: 0, steps: 48 });
+    // freq 2 => 4 half-periods, phase 0 => pinned to x=50 at both ends -- see renderHero for
+    // why this samples the exact visible span and bleeds separately rather than overscanning.
+    var pts = withBleed(sinePoints({ x0: 50, y0: 0, y1: 100, amp: 3.5, freq: 2, phase: 0, steps: 48 }), 3);
     var path = svgEl('path', { d: smoothPathD(pts), class: 'helix-strand helix-strand--mobile', fill: 'none' });
     path.style.stroke = 'url(#' + gradId + ')';
     svg.appendChild(path);
@@ -353,7 +388,12 @@
     var goldPts = [], indigoPts = [];
     for (var i = 0; i <= steps; i++) {
       var t = i / steps;
-      var y = -2 + 104 * t;
+      // t=0 => y=0, the exact visible top edge. baseG/baseI are already exactly goldEntryX /
+      // indigoEntryX at t=0 (smoothstep(0,t1,0) is 0 by construction), so mapping t straight
+      // onto the true visible span -- rather than an overscanned -2..102 the way this used to
+      // read -- pins that exact value to the edge that actually has to meet branches' now-exact
+      // bottom pin, instead of to an off-screen point a fraction of a percent away from it.
+      var y = 100 * t;
       var baseG = goldEntryX + (50 - goldEntryX) * smoothstep(0, t1, t);
       var baseI = indigoEntryX + (50 - indigoEntryX) * smoothstep(0, t1, t);
       var env = smoothstep(t1, t2, t) * (1 - smoothstep(t3, t4, t));
@@ -361,6 +401,10 @@
       goldPts.push([baseG + env * osc, y]);
       indigoPts.push([baseI - env * osc, y]);
     }
+    // Bleed only past the top; the bottom already dissolves via the CSS mask-image fade in
+    // helix.css, so it doesn't need (or want) a hard-edged extension.
+    goldPts = withBleed(goldPts, 3).slice(0, -1);
+    indigoPts = withBleed(indigoPts, 3).slice(0, -1);
 
     var goldPath = svgEl('path', { d: smoothPathD(goldPts), class: 'helix-strand helix-strand--gold', fill: 'none' });
     var indigoPath = svgEl('path', { d: smoothPathD(indigoPts), class: 'helix-strand helix-strand--indigo', fill: 'none' });
@@ -373,7 +417,7 @@
       var tc = k / (2 * freq);
       if (tc <= t2 + 0.015) continue;
       if (tc >= t3 - 0.015) break;
-      var ny = -2 + 104 * tc;
+      var ny = 100 * tc; // must match the strand loop's y-mapping above, or the dots drift off the actual crossing points
       svg.appendChild(svgEl('circle', { cx: '50', cy: ny.toFixed(2), r: '1.1', class: 'helix-braid-node' }));
     }
 

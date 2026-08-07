@@ -46,13 +46,18 @@
 
 #helix-hero .helix-svg {
   animation: helix-breathe 16s ease-in-out infinite alternate;
-  transform-origin: 50% 50%;
+  /* Anchored at bottom-center -- exactly the seam point (x=50, y=100) that has to meet the
+     branches strand's fixed start. scale() around that point leaves it stationary and only
+     sways the rest of the curve; the old translateX() shifted the whole strand uniformly,
+     which shifted that endpoint too and made the seam visibly drift through the animation
+     cycle (see helix.js's withBleed doc for the matching static-precision half of this fix). */
+  transform-origin: 50% 100%;
   will-change: transform;
 }
 
 @keyframes helix-breathe {
-  0%   { transform: translateX(-2.5px) scaleY(0.997); }
-  100% { transform: translateX(2.5px) scaleY(1.003); }
+  0%   { transform: scale(0.985, 0.997); }
+  100% { transform: scale(1.015, 1.003); }
 }
 
 /* ---------- Branches: gold/indigo fork + scroll-revealed rungs ---------- */
