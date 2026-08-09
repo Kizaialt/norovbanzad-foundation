@@ -20,6 +20,9 @@
 
   .program-grid { grid-template-columns: repeat(2, 1fr); gap: var(--space-5); }
 
+  .product-grid { grid-template-columns: repeat(2, 1fr); }
+  .contact__grid { gap: var(--space-7); }
+
   .site-footer__inner { grid-template-columns: 1.4fr 1fr 1fr; gap: var(--space-5); }
 }
 
@@ -46,6 +49,10 @@
   .nav-toggle { display: flex; }
 
   .branch-columns { grid-template-columns: 1fr; gap: var(--space-7); }
+
+  /* Form and details stack; the details card reads better below the form than beside it once
+     there isn't room for a comfortable two-column measure. */
+  .contact__grid { grid-template-columns: 1fr; gap: var(--space-7); }
 
   .site-footer__inner { grid-template-columns: 1fr 1fr; }
   .site-footer__col:first-child { grid-column: 1 / -1; }
@@ -77,6 +84,12 @@
   }
 
   .program-grid { grid-template-columns: 1fr; gap: var(--space-4); }
+
+  .product-grid { grid-template-columns: 1fr; gap: var(--space-4); }
+  .shop__notice { display: block; }
+  .contact-form .btn,
+  .contact-form button[type="submit"] { align-self: stretch; text-align: center; }
+  .contact-details { padding: var(--space-5); }
 
   .cta-row { flex-direction: column; align-items: stretch; }
   .cta-row .btn { text-align: center; }

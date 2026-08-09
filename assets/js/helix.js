@@ -243,7 +243,7 @@
     // no matter how the section's padding (or any other spacing token) changes later.
     var stage = document.getElementById('helix-branches');
     var goldCol = document.getElementById('branch-norovbanzad');
-    var indigoCol = document.getElementById('branch-foundation');
+    var indigoCol = document.getElementById('branch-banzragch');
     if (!section || !stage || !goldCol || !indigoCol) return null;
 
     var stageRect = stage.getBoundingClientRect();
