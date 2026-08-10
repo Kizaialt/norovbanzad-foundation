@@ -22,6 +22,7 @@
 
   .product-grid { grid-template-columns: repeat(2, 1fr); }
   .contact__grid { gap: var(--space-7); }
+  .news__cols { gap: var(--space-7); }
 
   .site-footer__inner { grid-template-columns: 1.4fr 1fr 1fr; gap: var(--space-5); }
 }
@@ -53,6 +54,10 @@
   /* Form and details stack; the details card reads better below the form than beside it once
      there isn't room for a comfortable two-column measure. */
   .contact__grid { grid-template-columns: 1fr; gap: var(--space-7); }
+  .news__cols { grid-template-columns: 1fr; gap: var(--space-8); }
+
+  /* The language switch stays beside the burger; nav itself collapses below both. */
+  .site-header__tools { gap: var(--space-3); }
 
   .site-footer__inner { grid-template-columns: 1fr 1fr; }
   .site-footer__col:first-child { grid-column: 1 / -1; }
@@ -87,6 +92,11 @@
 
   .product-grid { grid-template-columns: 1fr; gap: var(--space-4); }
   .shop__notice { display: block; }
+
+  /* Thumbnails become a slim strip rather than eating half the row at narrow widths. */
+  .post { grid-template-columns: 72px 1fr; gap: var(--space-4); }
+  .event { grid-template-columns: auto 1fr; gap: var(--space-4); }
+  .event__date { min-width: 56px; padding: var(--space-2); }
   .contact-form .btn,
   .contact-form button[type="submit"] { align-self: stretch; text-align: center; }
   .contact-details { padding: var(--space-5); }

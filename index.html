@@ -1,10 +1,18 @@
 <!DOCTYPE html>
-<html lang="en">
+<!--
+  LANGUAGE: Mongolian is the source of truth and lives inline in this file. English lives in
+  assets/js/i18n.js, keyed by the data-i18n attribute on each element. Edit MN here, EN there.
+  With JavaScript disabled the page still reads correctly in Mongolian.
+
+  TRANSLATION NOTE: the Mongolian below was drafted from published sources and needs a native
+  review pass before launch — it carries the names of two national figures.
+-->
+<html lang="mn">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Norovbanzad Foundation — The Song and the Story</title>
-<meta name="description" content="The Norovbanzad Foundation carries forward two strands of Mongolian culture: the long song of Namjilyn Norovbanzad and the literature of Namsrain Banzragch.">
+<title data-i18n="doc.title">Норовбанзад сан — Дуу ба Үг</title>
+<meta name="description" content="Намжилын Норовбанзадын уртын дуу, Намсрайн Банзрагчийн уран зохиол — монголын соёлын хоёр салааг нэгэн өв болгон уламжлуулагч Норовбанзад сан.">
 <link rel="icon" href="data:,">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -17,55 +25,66 @@
 </head>
 <body>
 
-<a class="skip-link" href="#main">Skip to content</a>
+<a class="skip-link" href="#main" data-i18n="skip">Гол агуулга руу очих</a>
 
 <header class="site-header" id="site-header">
   <div class="container site-header__inner">
-    <a class="site-header__mark" href="#hero">Norovbanzad Foundation</a>
-    <button class="nav-toggle" id="nav-toggle" aria-expanded="false" aria-controls="primary-nav">
-      <span aria-hidden="true"></span><span aria-hidden="true"></span><span aria-hidden="true"></span>
-      <span class="sr-only">Menu</span>
-    </button>
-    <nav class="primary-nav" id="primary-nav" aria-label="Primary">
-      <a href="#branch-norovbanzad">Her Song</a>
-      <a href="#branch-banzragch">His Story</a>
-      <a href="#foundation">The Foundation</a>
-      <a href="#shop">Shop</a>
-      <a href="#contact">Contact</a>
+    <a class="site-header__mark" href="#hero">Норовбанзад сан</a>
+
+    <div class="site-header__tools">
+      <!-- Language toggle. aria-pressed reflects which language is active. -->
+      <div class="lang-switch" role="group" aria-label="Хэл / Language">
+        <button type="button" class="lang-switch__btn" data-lang="mn" aria-pressed="true">МН</button>
+        <span class="lang-switch__sep" aria-hidden="true">/</span>
+        <button type="button" class="lang-switch__btn" data-lang="en" aria-pressed="false">EN</button>
+      </div>
+
+      <button class="nav-toggle" id="nav-toggle" aria-expanded="false" aria-controls="primary-nav">
+        <span aria-hidden="true"></span><span aria-hidden="true"></span><span aria-hidden="true"></span>
+        <span class="sr-only" data-i18n="menu">Цэс</span>
+      </button>
+    </div>
+
+    <nav class="primary-nav" id="primary-nav" aria-label="Үндсэн цэс">
+      <a href="#branch-norovbanzad" data-i18n="nav.song">Түүний дуу</a>
+      <a href="#branch-banzragch" data-i18n="nav.word">Түүний зохиол</a>
+      <a href="#foundation" data-i18n="nav.foundation">Сангийн тухай</a>
+      <a href="#news" data-i18n="nav.news">Мэдээ</a>
+      <a href="#shop" data-i18n="nav.shop">Дэлгүүр</a>
+      <a href="#contact" data-i18n="nav.contact">Холбоо барих</a>
     </nav>
   </div>
 </header>
 
 <main id="main">
 
-  <!-- ============ HERO — single strand, unbranched ============ -->
+  <!-- ============ HERO ============ -->
   <section class="hero" id="hero" data-helix-stage="hero">
     <div class="helix-stage" id="helix-hero" aria-hidden="true"></div>
     <div class="container hero__inner">
-      <p class="eyebrow">The Norovbanzad Foundation</p>
-      <h1 class="hero__title">The Song<br>and the Story.</h1>
-      <p class="hero__lede">
-        Two lives, one household, two of Mongolia's great oral and written arts — the long song
-        of Namjilyn Norovbanzad and the literature of Namsrain Banzragch, carried forward as one
-        inheritance.
+      <p class="eyebrow" data-i18n="hero.eyebrow">Норовбанзад сан</p>
+      <h1 class="hero__title" data-i18n="hero.title">Дуу ба Үг.</h1>
+      <p class="hero__lede" data-i18n="hero.lede">
+        Нэг гэр бүлийн хоёр амьдрал, Монголын хоёр их урлаг — Намжилын Норовбанзадын уртын дуу,
+        Намсрайн Банзрагчийн уран зохиол — нэгэн өв болон уламжлагдсаар.
       </p>
-      <a class="scroll-cue" href="#branches" aria-label="Scroll to explore">
+      <a class="scroll-cue" href="#branches" data-i18n-aria-label="hero.scroll" aria-label="Доош гүйлгэх">
         <span aria-hidden="true"></span>
       </a>
     </div>
   </section>
 
-  <!-- ============ BRANCHES — the strand forks in two ============ -->
+  <!-- ============ BRANCHES ============ -->
   <section class="branches" id="branches" data-helix-stage="branches">
     <div class="helix-stage" id="helix-branches" aria-hidden="true"></div>
 
     <div class="container branches__intro">
-      <p class="eyebrow">Where the strand divides</p>
-      <h2>She sang the steppe. He wrote it. They married in 1949.</h2>
-      <p class="branches__note">
-        For over half a century their two crafts grew alongside each other — a voice that carried
-        <em>urtiin duu</em> to the world, and a pen that set Mongolian life into prose. The
-        Foundation exists because neither strand is complete without the other.
+      <p class="eyebrow" data-i18n="branches.eyebrow">Салаалах цэг</p>
+      <h2 data-i18n="branches.title">Тэрээр тал нутгийг дуулсан. Тэрээр түүнийг бичсэн. 1949 онд ханилсан.</h2>
+      <p class="branches__note" data-i18n="branches.note">
+        Хагас зуун гаруй жилийн турш тэдний хоёр урлаг зэрэгцэн ургасан — <em>уртын дууг</em> дэлхийд
+        хүргэсэн хоолой, монгол хүний амьдралыг үг болгосон үзэг. Аль нэг нь дутвал өв бүрэн бус тул
+        энэхүү сан оршдог.
       </p>
     </div>
 
@@ -74,64 +93,86 @@
       <!-- Branch A — the singer -->
       <article class="branch branch--gold" id="branch-norovbanzad">
         <div class="branch__inner">
-          <p class="eyebrow">Branch One — The Voice</p>
-          <h3>Namjilyn Norovbanzad</h3>
-          <p class="branch__meta">Намжилын Норовбанзад · 1931–2002 · Long song (<em>urtiin duu</em>)</p>
-          <p class="branch__summary">
-            Born to herders in Dundgovi, she became the definitive voice of the Mongolian long song —
-            and the singer her nation would vote its Singer of the Century.
+          <p class="eyebrow" data-i18n="a.eyebrow">Нэгдүгээр салаа — Хоолой</p>
+          <h3 data-i18n="a.name">Намжилын Норовбанзад</h3>
+          <p class="branch__meta" data-i18n="a.meta">1931–2002 · <em>Уртын дуу</em></p>
+
+          <!--
+            PHOTO SLOT. Drop the file at assets/img/norovbanzad-portrait.jpg and delete the
+            .portrait--empty class plus the <span> placeholder. Keep width/height so the layout
+            does not jump while the image loads (CLS), and keep loading="lazy".
+            Supply a real alt description and a credit line — archival photographs usually carry
+            attribution conditions, so confirm rights before publishing.
+          -->
+          <figure class="portrait portrait--empty">
+            <img src="assets/img/norovbanzad-portrait.jpg"
+                 alt=""
+                 width="800" height="1000"
+                 loading="lazy" decoding="async"
+                 onerror="this.closest('.portrait').classList.add('portrait--missing')">
+            <span class="portrait__ph" aria-hidden="true">assets/img/norovbanzad-portrait.jpg</span>
+            <figcaption>
+              <span data-i18n="a.portrait.caption">[БАЙРШУУЛАХ: гэрэл зургийн тайлбар — юуг, хэзээ авсан.]</span>
+              <span class="portrait__credit">[CREDIT]</span>
+            </figcaption>
+          </figure>
+
+          <p class="branch__summary" data-i18n="a.summary">
+            Дундговийн малчны гэр бүлд төрж, монгол уртын дууны төлөөлөл болсон — ард түмнийхээ
+            саналаар “Зууны манлай дуучин”-оор өргөмжлөгдсөн.
           </p>
+
           <ol class="timeline">
             <li class="timeline__item">
               <time class="timeline__year" datetime="1931">1931</time>
-              <p>Born 10 December at Ulaan Ovoo, Dundgovi province, to the herders Damdin and Namjil.</p>
+              <p data-i18n="a.1931">12 дугаар сарын 10-нд Дундговь аймгийн Улаан овоонд малчин Дамдин,
+                Намжил нарын охин болон төрсөн.</p>
             </li>
             <li class="timeline__item">
               <time class="timeline__year" datetime="1940">1940</time>
-              <p>Entered school at nine. She sang so constantly that classmates named her
-                <em>Duuchin shar</em> — "the singer".</p>
+              <p data-i18n="a.1940">Есөн настайдаа сургуульд орсон. Байнга дуулдаг байсан тул үе
+                тэнгийнхэн нь <em>“Дуучин шар”</em> хэмээн нэрлэжээ.</p>
             </li>
             <li class="timeline__item">
               <time class="timeline__year" datetime="1942">1942</time>
-              <p>Her father died; she left school and returned to herding.</p>
+              <p data-i18n="a.1942">Эцэг нь нас барж, сургуулиа орхин мал маллах болсон.</p>
             </li>
             <li class="timeline__item">
               <time class="timeline__year" datetime="1946">1946</time>
-              <p>Professional debut at fifteen, singing <em>Ider Jinchin</em> at the Revolution
-                anniversary celebration in the capital.</p>
+              <p data-i18n="a.1946">Арван таван настайдаа нийслэлд болсон Хувьсгалын ойн баярт
+                <em>“Идэр жинчин”</em> дуугаар тайзнаа хөл тавьсан.</p>
             </li>
             <li class="timeline__item">
               <time class="timeline__year" datetime="1949">1949</time>
-              <p>Met and married the writer Namsrain Banzragch; the couple settled in Mandalgovi.</p>
+              <p data-i18n="a.1949">Зохиолч Намсрайн Банзрагчтай учирч ханилан, Мандалговьд суурьшсан.</p>
             </li>
             <li class="timeline__item">
               <time class="timeline__year" datetime="1957">1957</time>
-              <p>Won gold at the VI World Festival of Youth and Students in Moscow, carrying the long
-                song onto a world stage.</p>
+              <p data-i18n="a.1957">Москвад болсон VI дэлхийн залуучууд, оюутны наадамд алтан медаль
+                хүртэж, уртын дууг дэлхийн тайзанд гаргасан.</p>
             </li>
             <li class="timeline__item">
               <time class="timeline__year" datetime="1961">1961</time>
-              <p>Named Honoured Artist (<em>Gavyaat jujigchin</em>); completed her formal training as a
-                professional singer.</p>
+              <p data-i18n="a.1961">Гавьяат жүжигчин цол хүртэж, мэргэжлийн дуучны боловсролоо төгссөн.</p>
             </li>
             <li class="timeline__item">
               <time class="timeline__year" datetime="1969">1969</time>
-              <p>Named People's Artist of Mongolia (<em>Ardyn jujigchin</em>). Principal vocalist of the
-                State Song and Dance Ensemble until 1990.</p>
+              <p data-i18n="a.1969">Ардын жүжигчин цол хүртсэн. 1990 он хүртэл Улсын дуу бүжгийн
+                чуулгын гоцлол дуучин.</p>
             </li>
             <li class="timeline__item">
               <time class="timeline__year" datetime="1993">1993</time>
-              <p>Awarded the Fukuoka Asian Culture Prize for Arts and Culture.</p>
+              <p data-i18n="a.1993">Японы Фүкүокагийн Азийн соёлын шагнал хүртсэн.</p>
             </li>
             <li class="timeline__item">
               <time class="timeline__year" datetime="2000">2000</time>
-              <p>Voted Singer of the Century by the people of Mongolia.</p>
+              <p data-i18n="a.2000">Ард түмний саналаар “Зууны манлай дуучин”-оор шалгарсан.</p>
             </li>
             <li class="timeline__item">
               <time class="timeline__year" datetime="2002">2002</time>
-              <p>Died 21 December, leaving recordings of <em>Uyakhan zambuutivyn naran</em>,
-                <em>Seruun saikhan khangai</em> and <em>Zeergentiin shil</em> as the reference
-                performances of the form.</p>
+              <p data-i18n="a.2002">12 дугаар сарын 21-нд таалал төгссөн. <em>“Уяхан замбуутивийн наран”</em>,
+                <em>“Сэрүүн сайхан хангай”</em>, <em>“Зээргэнтийн шил”</em> зэрэг бичлэг нь уртын дууны
+                жишиг тоглолт болон үлдсэн.</p>
             </li>
           </ol>
         </div>
@@ -140,58 +181,74 @@
       <!-- Branch B — the writer -->
       <article class="branch branch--indigo" id="branch-banzragch">
         <div class="branch__inner">
-          <p class="eyebrow">Branch Two — The Word</p>
-          <h3>Namsrain Banzragch</h3>
-          <p class="branch__meta">Намсрайн Банзрагч · 1925–2003 · Prose, drama</p>
-          <p class="branch__summary">
-            A prose writer from Zavkhan and a laureate of the D. Natsagdorj Prize, he spent six decades
-            setting Mongolian life — the road, the steppe, the ordinary household — into literature.
+          <p class="eyebrow" data-i18n="b.eyebrow">Хоёрдугаар салаа — Үг</p>
+          <h3 data-i18n="b.name">Намсрайн Банзрагч</h3>
+          <p class="branch__meta" data-i18n="b.meta">1925–2003 · Зохиол, жүжиг</p>
+
+          <!-- PHOTO SLOT — see the note on the portrait in the first column. -->
+          <figure class="portrait portrait--empty">
+            <img src="assets/img/banzragch-portrait.jpg"
+                 alt=""
+                 width="800" height="1000"
+                 loading="lazy" decoding="async"
+                 onerror="this.closest('.portrait').classList.add('portrait--missing')">
+            <span class="portrait__ph" aria-hidden="true">assets/img/banzragch-portrait.jpg</span>
+            <figcaption>
+              <span data-i18n="b.portrait.caption">[БАЙРШУУЛАХ: гэрэл зургийн тайлбар — юуг, хэзээ авсан.]</span>
+              <span class="portrait__credit">[CREDIT]</span>
+            </figcaption>
+          </figure>
+
+          <p class="branch__summary" data-i18n="b.summary">
+            Завхан нутгийн зохиолч, Д.Нацагдоржийн нэрэмжит шагналт. Зургаан арван жилийн турш монгол
+            хүний амьдрал — зам, тал нутаг, энгийн айлын өдөр тутам — уран зохиол болгосон.
           </p>
+
           <ol class="timeline">
             <li class="timeline__item">
               <time class="timeline__year" datetime="1925">1925</time>
-              <p>Born in Aldarkhan sum, Zavkhan province.</p>
+              <p data-i18n="b.1925">Завхан аймгийн Алдархаан суманд төрсөн.</p>
             </li>
             <li class="timeline__item">
               <time class="timeline__year" datetime="1940">1940</time>
-              <p>Began publishing short fiction — among the earliest, <em>Jiriin khuukhnuud</em> and
-                <em>Tal nutgiin khavar</em>.</p>
+              <p data-i18n="b.1940">Богино өгүүллэг нийтлүүлж эхэлсэн — тэдгээрийн эхэнд
+                <em>“Жирийн хүүхнүүд”</em>, <em>“Тал нутгийн хавар”</em>.</p>
             </li>
             <li class="timeline__item">
               <time class="timeline__year" datetime="1949">1949</time>
-              <p>Married the singer Namjilyn Norovbanzad; the couple settled in Mandalgovi.</p>
+              <p data-i18n="b.1949">Дуучин Намжилын Норовбанзадтай ханилж, Мандалговьд суурьшсан.</p>
             </li>
             <li class="timeline__item">
               <time class="timeline__year" datetime="1955">1955</time>
-              <p>Wrote the play <em>Eemeg</em> ("The Earring").</p>
+              <p data-i18n="b.1955"><em>“Ээмэг”</em> жүжгээ бичсэн.</p>
             </li>
             <li class="timeline__item timeline__item--placeholder">
-              <span class="timeline__year">[YEAR]</span>
-              <p>[PLACEHOLDER: the years he studied at the Maxim Gorky Literature Institute in Moscow,
-                and at the National University's evening literature programme.]</p>
+              <span class="timeline__year">[ОН]</span>
+              <p data-i18n="b.study">[БАЙРШУУЛАХ: Москвагийн М.Горькийн нэрэмжит утга зохиолын дээд
+                сургууль, мөн Улсын их сургуулийн утга зохиолын оройн ангид суралцсан он.]</p>
             </li>
             <li class="timeline__item">
               <time class="timeline__year" datetime="1967">1967</time>
-              <p>Published the novel <em>Zam</em> ("The Road"), later translated into Russian and
-                Belarusian.</p>
+              <p data-i18n="b.1967"><em>“Зам”</em> романаа хэвлүүлсэн. Хожим орос, беларусь хэлнээ
+                орчуулагдсан.</p>
             </li>
             <li class="timeline__item timeline__item--placeholder">
-              <span class="timeline__year">[YEAR]</span>
-              <p>[PLACEHOLDER: year of the novel <em>Khoshuu tsagaan nutag</em>.]</p>
+              <span class="timeline__year">[ОН]</span>
+              <p data-i18n="b.khoshuu">[БАЙРШУУЛАХ: <em>“Хошуу цагаан нутаг”</em> романы он.]</p>
             </li>
             <li class="timeline__item timeline__item--placeholder">
-              <span class="timeline__year">[YEAR]</span>
-              <p>[PLACEHOLDER: year he was awarded the D. Natsagdorj Prize.]</p>
+              <span class="timeline__year">[ОН]</span>
+              <p data-i18n="b.prize">[БАЙРШУУЛАХ: Д.Нацагдоржийн нэрэмжит шагнал хүртсэн он.]</p>
             </li>
             <li class="timeline__item">
-              <span class="timeline__year">Collected works</span>
-              <p>Short fiction and novellas including <em>Monkh zul</em>, <em>Aadryn daraa</em>,
-                <em>Tsereg eriin duuli</em>, <em>Zambaga yagaan tsetseg</em>, <em>Ogloo</em> and
-                <em>Neg golynkhon</em>.</p>
+              <span class="timeline__year" data-i18n="b.works.year">Түүвэр зохиол</span>
+              <p data-i18n="b.works"><em>“Мөнх зул”</em>, <em>“Аадрын дараа”</em>,
+                <em>“Цэрэг эрийн дууль”</em>, <em>“Замбага ягаан цэцэг”</em>, <em>“Өглөө”</em>,
+                <em>“Нэг голынхон”</em> зэрэг өгүүллэг, тууж.</p>
             </li>
             <li class="timeline__item">
               <time class="timeline__year" datetime="2003">2003</time>
-              <p>Died, one year after his wife.</p>
+              <p data-i18n="b.2003">Гэргийнхээ хойноос нэг жилийн дараа таалал төгссөн.</p>
             </li>
           </ol>
         </div>
@@ -200,83 +257,156 @@
     </div>
   </section>
 
-  <!-- ============ CONVERGENCE — the strands braid into one ============ -->
+  <!-- ============ CONVERGENCE ============ -->
   <section class="convergence" id="foundation" data-helix-stage="convergence">
     <div class="helix-stage" id="helix-convergence" aria-hidden="true"></div>
     <div class="container convergence__inner">
-      <p class="eyebrow">Where the two strands meet</p>
-      <h2>One foundation, for a sung tradition and a written one.</h2>
-      <p class="convergence__lede">
-        [PLACEHOLDER: one paragraph on why the Foundation exists — who established it, in what year,
-        and what it set out to protect. The sentence that follows should say what it does today.]
-        Its remit is deliberately double: the long song as living practice, and Mongolian literature
-        as a written record of the same world.
+      <p class="eyebrow" data-i18n="c.eyebrow">Хоёр салаа нийлэх цэг</p>
+      <h2 data-i18n="c.title">Дуулах уламжлал, бичих уламжлал — нэг сан.</h2>
+      <p class="convergence__lede" data-i18n="c.lede">
+        [БАЙРШУУЛАХ: сан хэн, хэдэн онд байгуулагдсан, юуг хамгаалахаар зорьсон тухай нэг догол мөр.
+        Дараагийн өгүүлбэрт сан өнөөдөр юу хийж буйг бичнэ.] Сангийн үйл ажиллагаа санаатайгаар хос
+        чиглэлтэй: уртын дуу амьд практик хэвээр байх, монгол уран зохиол мөнөөх ертөнцийн бичмэл
+        баримт хэвээр үлдэх.
       </p>
 
       <dl class="stat-row">
-        <div class="stat">
-          <dt>[PLACEHOLDER]</dt>
-          <dd>Singers taught</dd>
-        </div>
-        <div class="stat">
-          <dt>[PLACEHOLDER]</dt>
-          <dd>Recordings preserved</dd>
-        </div>
-        <div class="stat">
-          <dt>[PLACEHOLDER]</dt>
-          <dd>Titles republished</dd>
-        </div>
-        <div class="stat">
-          <dt>[PLACEHOLDER]</dt>
-          <dd>Years active</dd>
-        </div>
+        <div class="stat"><dt>[ТОО]</dt><dd data-i18n="c.stat1">Сурсан дуучин</dd></div>
+        <div class="stat"><dt>[ТОО]</dt><dd data-i18n="c.stat2">Хадгалагдсан бичлэг</dd></div>
+        <div class="stat"><dt>[ТОО]</dt><dd data-i18n="c.stat3">Дахин хэвлэсэн ном</dd></div>
+        <div class="stat"><dt>[ТОО]</dt><dd data-i18n="c.stat4">Үйл ажиллагааны жил</dd></div>
       </dl>
 
       <div class="program-grid">
         <article class="program-card program-card--gold">
-          <p class="eyebrow">Long song</p>
-          <h3>[PLACEHOLDER: teaching programme name]</h3>
-          <p>[PLACEHOLDER: how the Foundation passes the long song to new singers — masterclasses,
-            apprenticeships, regional workshops.]</p>
+          <p class="eyebrow" data-i18n="c.prog1.eyebrow">Уртын дуу</p>
+          <h3 data-i18n="c.prog1.title">[БАЙРШУУЛАХ: сургалтын хөтөлбөрийн нэр]</h3>
+          <p data-i18n="c.prog1.body">[БАЙРШУУЛАХ: сан уртын дууг шинэ үеийн дуучдад хэрхэн
+            уламжлуулдаг вэ — мастер анги, шавь сургалт, орон нутгийн семинар.]</p>
         </article>
         <article class="program-card program-card--indigo">
-          <p class="eyebrow">Literature</p>
-          <h3>[PLACEHOLDER: publishing programme name]</h3>
-          <p>[PLACEHOLDER: how the Foundation keeps Banzragch's work and Mongolian literature in
-            print and in schools.]</p>
+          <p class="eyebrow" data-i18n="c.prog2.eyebrow">Уран зохиол</p>
+          <h3 data-i18n="c.prog2.title">[БАЙРШУУЛАХ: хэвлэлийн хөтөлбөрийн нэр]</h3>
+          <p data-i18n="c.prog2.body">[БАЙРШУУЛАХ: Банзрагчийн бүтээл болон монгол уран зохиолыг
+            хэвлэлд болон сургуулийн хөтөлбөрт хэрхэн хадгалж буй тухай.]</p>
         </article>
         <article class="program-card program-card--joint">
-          <p class="eyebrow">Archive</p>
-          <h3>[PLACEHOLDER: archive programme name]</h3>
-          <p>[PLACEHOLDER: the recordings, manuscripts and photographs held by the Foundation, and
-            how researchers or family members can access them.]</p>
+          <p class="eyebrow" data-i18n="c.prog3.eyebrow">Архив</p>
+          <h3 data-i18n="c.prog3.title">[БАЙРШУУЛАХ: архивын хөтөлбөрийн нэр]</h3>
+          <p data-i18n="c.prog3.body">[БАЙРШУУЛАХ: сангийн эзэмшилд буй бичлэг, гар бичмэл, гэрэл зураг,
+            мөн судлаач болон гэр бүлийнхэн хэрхэн хандах тухай.]</p>
         </article>
       </div>
     </div>
   </section>
 
-  <!-- ============ SHOP — scaffolded for a future storefront ============ -->
+  <!-- ============ NEWS & EVENTS ============ -->
   <!--
-    STORE INTEGRATION NOTE (for whoever wires this up):
-    This section is presentation-only. Nothing here takes payment, holds stock, or submits an order.
-    Each .product carries data-product-id / data-product-type so a real backend (Shopify Buy Button,
-    Snipcart, Stripe Payment Links, or a custom cart) can bind to it without the markup changing.
-    Replace the .shop__notice banner and swap .btn--disabled for real buy controls when it goes live.
-    Do NOT add prices or a checkout button until the backend actually exists — a storefront that
-    looks live but cannot take an order is worse than one that is honestly marked "not yet open".
+    A foundation site with no dated activity reads as dormant, so this section exists to be kept
+    current. Each entry uses <time datetime> so dates stay machine-readable. Replace the
+    placeholders with real items and delete any that are not in use — an empty slot is better
+    removed than left showing bracket text in production.
+  -->
+  <section class="news" id="news">
+    <div class="container news__inner">
+      <p class="eyebrow" data-i18n="n.eyebrow">Мэдээ ба арга хэмжээ</p>
+      <h2 data-i18n="n.title">Сангийн өнөөдрийн ажил.</h2>
+      <p class="news__lede" data-i18n="n.lede">
+        Тоглолт, мастер анги, хэвлэл, архивын шинэ нээлт. [БАЙРШУУЛАХ: эдгээрийг бодит мэдээллээр
+        солино уу — хоосон буюу хуучирсан мэдээний хэсэг нь идэвхгүй сангийн сэтгэгдэл төрүүлдэг.]
+      </p>
+
+      <div class="news__cols">
+
+        <div class="news__col">
+          <h3 class="news__colhead" data-i18n="n.upcoming">Товлогдсон</h3>
+
+          <article class="event">
+            <time class="event__date" datetime="2026-01-01">
+              <span class="event__day">00</span>
+              <span class="event__mon">[САР]</span>
+            </time>
+            <div class="event__body">
+              <h4 data-i18n="n.ev1.title">[БАЙРШУУЛАХ: арга хэмжээний нэр]</h4>
+              <p class="event__venue" data-i18n="n.ev1.venue">[БАЙРШУУЛАХ: газар, хот]</p>
+              <p data-i18n="n.ev1.body">[БАЙРШУУЛАХ: энэ юу вэ, хэнд зориулагдсан талаар нэг хоёр өгүүлбэр.]</p>
+              <a class="link-arrow" href="#contact" data-i18n="n.ev1.cta">Дэлгэрэнгүй</a>
+            </div>
+          </article>
+
+          <article class="event">
+            <time class="event__date" datetime="2026-01-01">
+              <span class="event__day">00</span>
+              <span class="event__mon">[САР]</span>
+            </time>
+            <div class="event__body">
+              <h4 data-i18n="n.ev2.title">[БАЙРШУУЛАХ: арга хэмжээний нэр]</h4>
+              <p class="event__venue" data-i18n="n.ev2.venue">[БАЙРШУУЛАХ: газар, хот]</p>
+              <p data-i18n="n.ev2.body">[БАЙРШУУЛАХ: энэ юу вэ, хэнд зориулагдсан талаар нэг хоёр өгүүлбэр.]</p>
+              <a class="link-arrow" href="#contact" data-i18n="n.ev2.cta">Дэлгэрэнгүй</a>
+            </div>
+          </article>
+        </div>
+
+        <div class="news__col">
+          <h3 class="news__colhead" data-i18n="n.recent">Сүүлийн үеийн</h3>
+
+          <article class="post">
+            <!-- Optional thumbnail: same rules as the portraits above. -->
+            <div class="post__thumb post__thumb--empty" aria-hidden="true"><span>[IMAGE]</span></div>
+            <div class="post__body">
+              <time class="post__date" datetime="2026-01-01">[ОГНОО]</time>
+              <h4 data-i18n="n.po1.title">[БАЙРШУУЛАХ: мэдээний гарчиг]</h4>
+              <p data-i18n="n.po1.body">[БАЙРШУУЛАХ: мэдээг хураангуйлсан хоёр гурван өгүүлбэр.]</p>
+              <a class="link-arrow" href="#contact" data-i18n="n.readmore">Цааш унших</a>
+            </div>
+          </article>
+
+          <article class="post">
+            <div class="post__thumb post__thumb--empty" aria-hidden="true"><span>[IMAGE]</span></div>
+            <div class="post__body">
+              <time class="post__date" datetime="2026-01-01">[ОГНОО]</time>
+              <h4 data-i18n="n.po2.title">[БАЙРШУУЛАХ: мэдээний гарчиг]</h4>
+              <p data-i18n="n.po2.body">[БАЙРШУУЛАХ: мэдээг хураангуйлсан хоёр гурван өгүүлбэр.]</p>
+              <a class="link-arrow" href="#contact" data-i18n="n.readmore">Цааш унших</a>
+            </div>
+          </article>
+
+          <article class="post">
+            <div class="post__thumb post__thumb--empty" aria-hidden="true"><span>[IMAGE]</span></div>
+            <div class="post__body">
+              <time class="post__date" datetime="2026-01-01">[ОГНОО]</time>
+              <h4 data-i18n="n.po3.title">[БАЙРШУУЛАХ: мэдээний гарчиг]</h4>
+              <p data-i18n="n.po3.body">[БАЙРШУУЛАХ: мэдээг хураангуйлсан хоёр гурван өгүүлбэр.]</p>
+              <a class="link-arrow" href="#contact" data-i18n="n.readmore">Цааш унших</a>
+            </div>
+          </article>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ SHOP ============ -->
+  <!--
+    STORE INTEGRATION NOTE: presentation-only. Nothing here takes payment or holds stock. Each
+    .product carries data-product-id / data-product-type so a backend (Shopify Buy Button,
+    Snipcart, Stripe Payment Links, or a custom cart) can bind without changing the markup.
+    Replace the .shop__notice banner and swap .btn--disabled for real buy controls at launch.
+    Do NOT add prices or a checkout button before the backend exists.
   -->
   <section class="shop" id="shop">
     <div class="container shop__inner">
-      <p class="eyebrow">Shop</p>
-      <h2>Recordings and books.</h2>
-      <p class="shop__lede">
-        [PLACEHOLDER: one sentence on what the Foundation sells and where the proceeds go — e.g.
-        that every purchase funds the teaching and archive programmes above.]
+      <p class="eyebrow" data-i18n="shop.eyebrow">Дэлгүүр</p>
+      <h2 data-i18n="shop.title">Бичлэг ба ном.</h2>
+      <p class="shop__lede" data-i18n="shop.lede">
+        [БАЙРШУУЛАХ: сан юу борлуулдаг, орлого нь хаашаа зарцуулагддаг тухай нэг өгүүлбэр — жишээ нь,
+        худалдан авалт бүр сургалт болон архивын хөтөлбөрийг санхүүжүүлдэг гэх мэт.]
       </p>
 
-      <p class="shop__notice" role="status">
-        The online shop is not open yet. To order in the meantime, please
-        <a href="#contact">contact the Foundation</a> directly.
+      <p class="shop__notice" role="status" data-i18n="shop.notice">
+        Онлайн дэлгүүр хараахан нээгдээгүй байна. Захиалга өгөхийг хүсвэл
+        <a href="#contact">сантай шууд холбогдоно уу</a>.
       </p>
 
       <div class="product-grid">
@@ -284,45 +414,45 @@
         <article class="product" data-product-id="[SKU]" data-product-type="recording">
           <div class="product__media" aria-hidden="true"><span>[IMAGE]</span></div>
           <div class="product__body">
-            <p class="eyebrow">Recording</p>
-            <h3 class="product__title">[PLACEHOLDER: album or recording title]</h3>
-            <p class="product__desc">[PLACEHOLDER: format, length, and what is on it.]</p>
-            <p class="product__price">[PRICE]</p>
-            <button class="btn btn--ghost btn--disabled" type="button" disabled>Not yet available</button>
+            <p class="eyebrow" data-i18n="shop.p1.eyebrow">Бичлэг</p>
+            <h3 class="product__title" data-i18n="shop.p1.title">[БАЙРШУУЛАХ: цомог эсвэл бичлэгийн нэр]</h3>
+            <p class="product__desc" data-i18n="shop.p1.desc">[БАЙРШУУЛАХ: формат, үргэлжлэх хугацаа, агуулга.]</p>
+            <p class="product__price">[ҮНЭ]</p>
+            <button class="btn btn--ghost btn--disabled" type="button" disabled data-i18n="shop.unavailable">Одоогоор боломжгүй</button>
           </div>
         </article>
 
         <article class="product" data-product-id="[SKU]" data-product-type="book">
           <div class="product__media" aria-hidden="true"><span>[IMAGE]</span></div>
           <div class="product__body">
-            <p class="eyebrow">Book</p>
-            <h3 class="product__title">Zam <span class="product__title-alt">("The Road")</span></h3>
-            <p class="product__desc">[PLACEHOLDER: edition, language(s), page count, publisher.]</p>
-            <p class="product__price">[PRICE]</p>
-            <button class="btn btn--ghost btn--disabled" type="button" disabled>Not yet available</button>
+            <p class="eyebrow" data-i18n="shop.p2.eyebrow">Ном</p>
+            <h3 class="product__title">Зам</h3>
+            <p class="product__desc" data-i18n="shop.p2.desc">[БАЙРШУУЛАХ: хэвлэл, хэл, хуудасны тоо, хэвлэлийн газар.]</p>
+            <p class="product__price">[ҮНЭ]</p>
+            <button class="btn btn--ghost btn--disabled" type="button" disabled data-i18n="shop.unavailable">Одоогоор боломжгүй</button>
           </div>
         </article>
 
         <article class="product" data-product-id="[SKU]" data-product-type="book">
           <div class="product__media" aria-hidden="true"><span>[IMAGE]</span></div>
           <div class="product__body">
-            <p class="eyebrow">Book</p>
-            <h3 class="product__title">[PLACEHOLDER: collected short fiction]</h3>
-            <p class="product__desc">[PLACEHOLDER: which stories are collected, and in what edition.]</p>
-            <p class="product__price">[PRICE]</p>
-            <button class="btn btn--ghost btn--disabled" type="button" disabled>Not yet available</button>
+            <p class="eyebrow" data-i18n="shop.p3.eyebrow">Ном</p>
+            <h3 class="product__title" data-i18n="shop.p3.title">[БАЙРШУУЛАХ: түүвэр өгүүллэг]</h3>
+            <p class="product__desc" data-i18n="shop.p3.desc">[БАЙРШУУЛАХ: аль зохиолууд, ямар хэвлэлд багтсан.]</p>
+            <p class="product__price">[ҮНЭ]</p>
+            <button class="btn btn--ghost btn--disabled" type="button" disabled data-i18n="shop.unavailable">Одоогоор боломжгүй</button>
           </div>
         </article>
 
         <article class="product" data-product-id="[SKU]" data-product-type="film">
           <div class="product__media" aria-hidden="true"><span>[IMAGE]</span></div>
           <div class="product__body">
-            <p class="eyebrow">Film</p>
+            <p class="eyebrow" data-i18n="shop.p4.eyebrow">Кино</p>
             <h3 class="product__title">World-Cherished Mongolian Treasure</h3>
-            <p class="product__desc">[PLACEHOLDER: the 2006 documentary tribute — format and running
-              time. Confirm the Foundation holds distribution rights before listing.]</p>
-            <p class="product__price">[PRICE]</p>
-            <button class="btn btn--ghost btn--disabled" type="button" disabled>Not yet available</button>
+            <p class="product__desc" data-i18n="shop.p4.desc">[БАЙРШУУЛАХ: 2006 оны баримтат киноны формат,
+              үргэлжлэх хугацаа. Жагсаахаас өмнө сан түгээх эрхтэй эсэхийг баталгаажуулна уу.]</p>
+            <p class="product__price">[ҮНЭ]</p>
+            <button class="btn btn--ghost btn--disabled" type="button" disabled data-i18n="shop.unavailable">Одоогоор боломжгүй</button>
           </div>
         </article>
 
@@ -333,32 +463,31 @@
   <!-- ============ SUPPORT ============ -->
   <section class="get-involved" id="get-involved">
     <div class="container get-involved__inner">
-      <h2>Help carry both strands forward.</h2>
-      <p>[PLACEHOLDER: a short invitation to support the Foundation's work — through giving,
-        volunteering, or attending an event.]</p>
+      <h2 data-i18n="sup.title">Хоёр салааг хамтдаа уламжлуулахад тусална уу.</h2>
+      <p data-i18n="sup.body">[БАЙРШУУЛАХ: хандив өгөх, сайн дурын ажил хийх, арга хэмжээнд оролцох
+        замаар сангийн үйлсийг дэмжихийг урих богино уриалга.]</p>
       <div class="cta-row">
-        <a class="btn btn--primary" href="#contact">Support the Foundation</a>
-        <a class="btn btn--ghost" href="#contact">Get in touch</a>
+        <a class="btn btn--primary" href="#contact" data-i18n="sup.cta1">Сангаа дэмжих</a>
+        <a class="btn btn--ghost" href="#contact" data-i18n="sup.cta2">Холбоо барих</a>
       </div>
     </div>
   </section>
 
   <!-- ============ CONTACT ============ -->
   <!--
-    FORM NOTE: this form has no backend yet. `data-endpoint` is intentionally empty; until it is
-    filled in, main.js intercepts submit and shows the fallback email instead of silently failing.
-    To activate: set data-endpoint to your form handler (Formspree, Netlify Forms, or your own
-    POST route) — main.js will then submit to it normally.
+    FORM NOTE: no backend yet. data-endpoint is intentionally empty; while it is, main.js
+    intercepts submit and shows the fallback email instead of silently failing. To activate,
+    set data-endpoint to your form handler (Formspree, Netlify Forms, or your own POST route).
   -->
   <section class="contact" id="contact">
     <div class="container contact__inner">
 
       <div class="contact__intro">
-        <p class="eyebrow">Contact</p>
-        <h2>Get in touch.</h2>
-        <p>
-          For enquiries about the archive, performance and teaching requests, publishing rights, or
-          orders while the shop is closed.
+        <p class="eyebrow" data-i18n="ct.eyebrow">Холбоо барих</p>
+        <h2 data-i18n="ct.title">Бидэнтэй холбогдоно уу.</h2>
+        <p data-i18n="ct.body">
+          Архив, судалгааны асуулга, тоглолт болон сургалтын хүсэлт, хэвлэн нийтлэх эрх, эсвэл дэлгүүр
+          нээгдэхээс өмнөх захиалгын талаар.
         </p>
       </div>
 
@@ -366,48 +495,48 @@
 
         <form class="contact-form" id="contact-form" data-endpoint="" novalidate>
           <div class="field">
-            <label for="cf-name">Name</label>
+            <label for="cf-name" data-i18n="ct.name">Нэр</label>
             <input type="text" id="cf-name" name="name" autocomplete="name" required>
           </div>
           <div class="field">
-            <label for="cf-email">Email</label>
+            <label for="cf-email" data-i18n="ct.email">И-мэйл</label>
             <input type="email" id="cf-email" name="email" autocomplete="email" required>
           </div>
           <div class="field">
-            <label for="cf-subject">Subject</label>
+            <label for="cf-subject" data-i18n="ct.subject">Сэдэв</label>
             <select id="cf-subject" name="subject">
-              <option>Archive or research enquiry</option>
-              <option>Performance or teaching request</option>
-              <option>Publishing and rights</option>
-              <option>Orders and shop</option>
-              <option>Supporting the Foundation</option>
-              <option>Something else</option>
+              <option data-i18n="ct.opt1">Архив, судалгааны асуулга</option>
+              <option data-i18n="ct.opt2">Тоглолт, сургалтын хүсэлт</option>
+              <option data-i18n="ct.opt3">Хэвлэн нийтлэх эрх</option>
+              <option data-i18n="ct.opt4">Захиалга, дэлгүүр</option>
+              <option data-i18n="ct.opt5">Сангаа дэмжих</option>
+              <option data-i18n="ct.opt6">Бусад</option>
             </select>
           </div>
           <div class="field">
-            <label for="cf-message">Message</label>
+            <label for="cf-message" data-i18n="ct.message">Захидал</label>
             <textarea id="cf-message" name="message" rows="6" required></textarea>
           </div>
-          <button class="btn btn--primary" type="submit">Send message</button>
+          <button class="btn btn--primary" type="submit" data-i18n="ct.send">Илгээх</button>
           <p class="form-status" id="form-status" role="status" aria-live="polite"></p>
         </form>
 
         <div class="contact-details">
           <div class="contact-details__block">
-            <p class="eyebrow">Email</p>
-            <p><a href="mailto:[PLACEHOLDER-EMAIL]">[PLACEHOLDER: email address]</a></p>
+            <p class="eyebrow" data-i18n="ct.l.email">И-мэйл</p>
+            <p><a href="mailto:[PLACEHOLDER-EMAIL]" data-i18n="ct.v.email">[БАЙРШУУЛАХ: и-мэйл хаяг]</a></p>
           </div>
           <div class="contact-details__block">
-            <p class="eyebrow">Phone</p>
-            <p>[PLACEHOLDER: +976 phone number]</p>
+            <p class="eyebrow" data-i18n="ct.l.phone">Утас</p>
+            <p data-i18n="ct.v.phone">[БАЙРШУУЛАХ: +976 утасны дугаар]</p>
           </div>
           <div class="contact-details__block">
-            <p class="eyebrow">Address</p>
-            <p>[PLACEHOLDER: street, district, Ulaanbaatar, Mongolia]</p>
+            <p class="eyebrow" data-i18n="ct.l.address">Хаяг</p>
+            <p data-i18n="ct.v.address">[БАЙРШУУЛАХ: гудамж, дүүрэг, Улаанбаатар, Монгол Улс]</p>
           </div>
           <div class="contact-details__block">
-            <p class="eyebrow">Follow</p>
-            <p>[PLACEHOLDER: Facebook / YouTube / Instagram links]</p>
+            <p class="eyebrow" data-i18n="ct.l.follow">Дагах</p>
+            <p data-i18n="ct.v.follow">[БАЙРШУУЛАХ: Facebook / YouTube / Instagram]</p>
           </div>
         </div>
 
@@ -420,29 +549,30 @@
 <footer class="site-footer">
   <div class="container site-footer__inner">
     <div class="site-footer__col">
-      <p class="site-footer__mark">Norovbanzad Foundation</p>
-      <p class="site-footer__tag">
-        In honour of Namjilyn Norovbanzad, 1931–2002, and Namsrain Banzragch, 1925–2003.
+      <p class="site-footer__mark">Норовбанзад сан</p>
+      <p class="site-footer__tag" data-i18n="f.tag">
+        Намжилын Норовбанзад (1931–2002), Намсрайн Банзрагч (1925–2003) нарын дурсгалд.
       </p>
     </div>
     <div class="site-footer__col">
-      <p class="eyebrow">Explore</p>
-      <p><a href="#branch-norovbanzad">Her Song</a></p>
-      <p><a href="#branch-banzragch">His Story</a></p>
-      <p><a href="#foundation">The Foundation</a></p>
+      <p class="eyebrow" data-i18n="f.explore">Танилцах</p>
+      <p><a href="#branch-norovbanzad" data-i18n="nav.song">Түүний дуу</a></p>
+      <p><a href="#branch-banzragch" data-i18n="nav.word">Түүний зохиол</a></p>
+      <p><a href="#foundation" data-i18n="nav.foundation">Сангийн тухай</a></p>
     </div>
     <div class="site-footer__col">
-      <p class="eyebrow">More</p>
-      <p><a href="#shop">Shop</a></p>
-      <p><a href="#get-involved">Support</a></p>
-      <p><a href="#contact">Contact</a></p>
+      <p class="eyebrow" data-i18n="f.more">Бусад</p>
+      <p><a href="#news" data-i18n="nav.news">Мэдээ</a></p>
+      <p><a href="#shop" data-i18n="nav.shop">Дэлгүүр</a></p>
+      <p><a href="#get-involved" data-i18n="f.support">Дэмжих</a></p>
     </div>
   </div>
   <div class="container site-footer__bottom">
-    <p>&copy; <span id="year"></span> Norovbanzad Foundation. All rights reserved.</p>
+    <p>&copy; <span id="year"></span> Норовбанзад сан. <span data-i18n="f.rights">Бүх эрх хуулиар хамгаалагдсан.</span></p>
   </div>
 </footer>
 
+<script src="assets/js/i18n.js"></script>
 <script src="assets/js/helix.js" defer></script>
 <script src="assets/js/main.js" defer></script>
 </body>
