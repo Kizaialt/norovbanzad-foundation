@@ -59,8 +59,15 @@
 <main id="main">
 
   <!-- ============ HERO ============ -->
-  <section class="hero" id="hero" data-helix-stage="hero">
-    <div class="helix-stage" id="helix-hero" aria-hidden="true"></div>
+  <!--
+    The DNA motif appears as TWO compact, art-directed marks (here and above the convergence
+    heading) rather than as a graphic stretched behind the whole page. Reason: a helix needs
+    several visible turns in a short span to read as a helix. Spread over ~2800px of section
+    height it degrades into a long wandering line and competes with the text it sits behind.
+    Contained, the same geometry reads immediately -- and the two-column layout carries the
+    "two lives" idea everywhere else, structurally, without any drawing at all.
+  -->
+  <section class="hero" id="hero">
     <div class="container hero__inner">
       <p class="eyebrow" data-i18n="hero.eyebrow">Норовбанзад сан</p>
       <h1 class="hero__title" data-i18n="hero.title">Дуу ба Үг.</h1>
@@ -68,6 +75,7 @@
         Нэг гэр бүлийн хоёр амьдрал, Монголын хоёр их урлаг — Намжилын Норовбанзадын уртын дуу,
         Намсрайн Банзрагчийн уран зохиол — нэгэн өв болон уламжлагдсаар.
       </p>
+      <div class="dna-mark dna-mark--hero" id="dna-hero" aria-hidden="true"></div>
       <a class="scroll-cue" href="#branches" data-i18n-aria-label="hero.scroll" aria-label="Доош гүйлгэх">
         <span aria-hidden="true"></span>
       </a>
@@ -75,9 +83,7 @@
   </section>
 
   <!-- ============ BRANCHES ============ -->
-  <section class="branches" id="branches" data-helix-stage="branches">
-    <div class="helix-stage" id="helix-branches" aria-hidden="true"></div>
-
+  <section class="branches" id="branches">
     <div class="container branches__intro">
       <p class="eyebrow" data-i18n="branches.eyebrow">Салаалах цэг</p>
       <h2 data-i18n="branches.title">Тэрээр тал нутгийг дуулсан. Тэрээр түүнийг бичсэн. 1949 онд ханилсан.</h2>
@@ -258,9 +264,11 @@
   </section>
 
   <!-- ============ CONVERGENCE ============ -->
-  <section class="convergence" id="foundation" data-helix-stage="convergence">
-    <div class="helix-stage" id="helix-convergence" aria-hidden="true"></div>
+  <section class="convergence" id="foundation">
     <div class="container convergence__inner">
+      <!-- The second and final mark: the two strands closing into one, directly above the
+           heading that says exactly that. -->
+      <div class="dna-mark dna-mark--merge" id="dna-merge" aria-hidden="true"></div>
       <p class="eyebrow" data-i18n="c.eyebrow">Хоёр салаа нийлэх цэг</p>
       <h2 data-i18n="c.title">Дуулах уламжлал, бичих уламжлал — нэг сан.</h2>
       <p class="convergence__lede" data-i18n="c.lede">

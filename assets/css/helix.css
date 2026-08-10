@@ -1,96 +1,54 @@
-/* DNA strand layer. Geometry, band width, per-quad opacity and paint order are computed in
-   helix.js (see the header there for the twisted-band model); this file owns placement, colour
-   and motion.
+/* Compact DNA marks. Geometry, per-node depth, opacity and paint order come from helix.js;
+   this file owns size, placement, colour and the reveal.
 
-   Each .helix-stage is an absolutely-positioned, non-interactive layer behind its section's
-   .container (z-index 2 there, 1 here). helix.js injects one inline <svg> per stage whose
-   viewBox is in PIXELS and matches the stage box, so nothing here compensates for scaling. */
+   These are ornaments in the flow of the page, NOT a layer behind it. There is deliberately no
+   absolutely-positioned full-section stage any more: a helix drawn across a whole section reads
+   as a stray wandering line and fights the copy it sits behind. Two contained marks say the same
+   thing better, and the two-column layout carries the idea everywhere else. */
 
-.helix-stage {
-  position: absolute;
-  inset: 0;
-  z-index: 1;
-  overflow: hidden;
-  pointer-events: none;
+.dna-mark {
+  width: 54px;
+  margin: 0 auto var(--space-6);
   opacity: 0;
-  transition: opacity var(--dur-slow) var(--ease-elegant);
+  transform: translateY(6px);
+  transition:
+    opacity var(--dur-slow) var(--ease-elegant),
+    transform var(--dur-slow) var(--ease-elegant);
 }
-.helix-stage.is-visible { opacity: 1; }
+.dna-mark.is-visible {
+  opacity: 1;
+  transform: none;
+}
 
-.helix-svg {
-  width: 100%;
-  height: 100%;
+.dna-svg {
   display: block;
+  width: 100%;
+  height: auto;
   overflow: visible;
 }
 
-/* ---------- Ribbon bands ----------
-   These are FILLED shapes, not strokes — no stroke properties belong here. Per-quad opacity is
-   set by helix.js from how square-on that part of the band is to the viewer, so declaring an
-   opacity here would flatten the twist. */
+/* stroke-width and opacity are set per node from that node's depth, so they are intentionally
+   not declared here -- a value here would flatten the three-dimensional read. */
+.dna-strand {
+  fill: none;
+  stroke-linecap: round;
+}
+.dna-strand--gold { stroke: var(--color-gold-deep); }
+.dna-strand--indigo { stroke: var(--color-indigo); }
 
-.helix-ribbon {
-  stroke: none;
-  shape-rendering: geometricPrecision;
+.dna-rung {
+  stroke: var(--color-ink-faint);
+  stroke-linecap: round;
 }
 
-.helix-ribbon--gold { fill: var(--color-strand-gold); }
-.helix-ribbon--indigo { fill: var(--color-strand-indigo); }
+/* Hero: sits between the lede and the scroll cue, so the eye goes
+   title -> sentence -> mark -> down. */
+.dna-mark--hero { margin-bottom: var(--space-7); }
 
-/* The hero's undivided band: one life, before it becomes two. */
-.helix-ribbon--single { fill: var(--color-strand-neutral); }
+/* Convergence: directly above the "two strands meet" heading, where its taper illustrates the
+   sentence underneath it. */
+.dna-mark--merge { margin-bottom: var(--space-5); }
 
-/* ---------- Base pairs ----------
-   One per timeline item, revealed as that item scrolls in. Each half grows outward from the
-   band it belongs to, so the pair reads as reaching in from the two lives toward the middle. */
-
-.helix-pair {
-  stroke: none;
-  opacity: 0;
-  transform-box: fill-box;
-  transform-origin: var(--pair-origin, 50%) 50%;
-  transform: scaleX(0.04);
-  transition:
-    opacity var(--dur-med) var(--ease-elegant),
-    transform var(--dur-slow) var(--ease-elegant);
-}
-.helix-pair--gold { fill: var(--color-strand-gold); }
-.helix-pair--indigo { fill: var(--color-strand-indigo); }
-.helix-pair.is-active {
-  opacity: 0.5;
-  transform: scaleX(1);
-}
-
-/* ---------- Hero: slow ambient breathing ----------
-   Anchored at bottom-centre, exactly where this band hands over to the fork below. Scaling
-   about that point leaves the handover fixed and sways only the rest of the band; translating
-   would move the join and make it drift through the cycle. */
-#helix-hero .helix-svg {
-  animation: helix-breathe 20s ease-in-out infinite alternate;
-  transform-origin: 50% 100%;
-  will-change: transform;
-}
-@keyframes helix-breathe {
-  0%   { transform: scale(0.992, 0.999); }
-  100% { transform: scale(1.008, 1.001); }
-}
-
-/* Fade the tail so the braid hands off to the section below instead of cutting off flat. */
-#helix-convergence .helix-svg {
-  -webkit-mask-image: linear-gradient(to bottom, #000 0%, #000 84%, transparent 100%);
-          mask-image: linear-gradient(to bottom, #000 0%, #000 84%, transparent 100%);
-}
-
-/* Stacked (mobile) layouts run the bands behind the cards rather than beside them, so they are
-   pulled back to stay clearly subordinate to the text in front. */
-.helix-svg--stacked { opacity: 0.5; }
-
-/* ---------- Reduced motion ----------
-   base.css already collapses durations globally; these make the intent explicit for this layer
-   and drop the ambient loop outright. Pairs are shown at full width so nothing is stranded
-   mid-animation. */
 @media (prefers-reduced-motion: reduce) {
-  #helix-hero .helix-svg { animation: none; }
-  .helix-stage, .helix-pair { transition: none; }
-  .helix-pair { opacity: 0.5; transform: scaleX(1); }
+  .dna-mark { transition: none; opacity: 1; transform: none; }
 }
