@@ -49,7 +49,25 @@
   .primary-nav.is-open { display: flex; }
   .nav-toggle { display: flex; }
 
+  /* Stacked: there is no longer a gutter to build an axis in, and mirroring one column would
+     just make it read as misaligned. Both histories revert to a plain left-hand timeline. */
   .branch-columns { grid-template-columns: 1fr; gap: var(--space-7); }
+  .branch-columns::before { display: none; }
+
+  .branch--gold .branch__inner { text-align: left; }
+  .branch--gold .timeline {
+    border-right: none;
+    border-left: 1px solid var(--color-line-strong);
+  }
+  .branch--gold .timeline__item {
+    padding-right: 0;
+    padding-left: var(--space-6);
+  }
+  .branch--gold .timeline__item::before { right: auto; left: -4.5px; }
+  .branch--gold .timeline__item--tie::before { right: auto; left: -6px; }
+
+  /* The cross-tie reach pointed at an axis that no longer exists. */
+  .timeline__item--tie::after { display: none; }
 
   /* Form and details stack; the details card reads better below the form than beside it once
      there isn't room for a comfortable two-column measure. */

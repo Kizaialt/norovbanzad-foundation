@@ -20,7 +20,6 @@
 <link rel="stylesheet" href="assets/css/tokens.css">
 <link rel="stylesheet" href="assets/css/base.css">
 <link rel="stylesheet" href="assets/css/layout.css">
-<link rel="stylesheet" href="assets/css/helix.css">
 <link rel="stylesheet" href="assets/css/responsive.css">
 </head>
 <body>
@@ -60,12 +59,10 @@
 
   <!-- ============ HERO ============ -->
   <!--
-    The DNA motif appears as TWO compact, art-directed marks (here and above the convergence
-    heading) rather than as a graphic stretched behind the whole page. Reason: a helix needs
-    several visible turns in a short span to read as a helix. Spread over ~2800px of section
-    height it degrades into a long wandering line and competes with the text it sits behind.
-    Contained, the same geometry reads immediately -- and the two-column layout carries the
-    "two lives" idea everywhere else, structurally, without any drawing at all.
+    There is no DNA graphic anywhere on this page, by design. The motif is carried by STRUCTURE
+    instead: two histories set either side of a shared central axis, each timeline facing that
+    axis so the entries read as pairs stepping down a ladder, and the years the two lives
+    actually touch marked as cross-ties. See .branch-columns in layout.css.
   -->
   <section class="hero" id="hero">
     <div class="container hero__inner">
@@ -75,7 +72,6 @@
         Нэг гэр бүлийн хоёр амьдрал, Монголын хоёр их урлаг — Намжилын Норовбанзадын уртын дуу,
         Намсрайн Банзрагчийн уран зохиол — нэгэн өв болон уламжлагдсаар.
       </p>
-      <div class="dna-mark dna-mark--hero" id="dna-hero" aria-hidden="true"></div>
       <a class="scroll-cue" href="#branches" data-i18n-aria-label="hero.scroll" aria-label="Доош гүйлгэх">
         <span aria-hidden="true"></span>
       </a>
@@ -148,7 +144,9 @@
               <p data-i18n="a.1946">Арван таван настайдаа нийслэлд болсон Хувьсгалын ойн баярт
                 <em>“Идэр жинчин”</em> дуугаар тайзнаа хөл тавьсан.</p>
             </li>
-            <li class="timeline__item">
+            <!-- 1949 is the one year both timelines carry: the point where the two strands
+                 actually join. Marked as a cross-tie in both columns. -->
+            <li class="timeline__item timeline__item--tie">
               <time class="timeline__year" datetime="1949">1949</time>
               <p data-i18n="a.1949">Зохиолч Намсрайн Банзрагчтай учирч ханилан, Мандалговьд суурьшсан.</p>
             </li>
@@ -220,7 +218,8 @@
               <p data-i18n="b.1940">Богино өгүүллэг нийтлүүлж эхэлсэн — тэдгээрийн эхэнд
                 <em>“Жирийн хүүхнүүд”</em>, <em>“Тал нутгийн хавар”</em>.</p>
             </li>
-            <li class="timeline__item">
+            <!-- The same year, from his side — the matching half of the cross-tie. -->
+            <li class="timeline__item timeline__item--tie">
               <time class="timeline__year" datetime="1949">1949</time>
               <p data-i18n="b.1949">Дуучин Намжилын Норовбанзадтай ханилж, Мандалговьд суурьшсан.</p>
             </li>
@@ -266,9 +265,6 @@
   <!-- ============ CONVERGENCE ============ -->
   <section class="convergence" id="foundation">
     <div class="container convergence__inner">
-      <!-- The second and final mark: the two strands closing into one, directly above the
-           heading that says exactly that. -->
-      <div class="dna-mark dna-mark--merge" id="dna-merge" aria-hidden="true"></div>
       <p class="eyebrow" data-i18n="c.eyebrow">Хоёр салаа нийлэх цэг</p>
       <h2 data-i18n="c.title">Дуулах уламжлал, бичих уламжлал — нэг сан.</h2>
       <p class="convergence__lede" data-i18n="c.lede">
@@ -581,7 +577,6 @@
 </footer>
 
 <script src="assets/js/i18n.js"></script>
-<script src="assets/js/helix.js" defer></script>
 <script src="assets/js/main.js" defer></script>
 </body>
 </html>

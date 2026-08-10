@@ -157,6 +157,19 @@ main > section,
   max-width: 640px;
   margin: 0 auto var(--space-9);
 }
+/* ---------- The DNA structure ----------
+   There is no DNA graphic on this site. The form is carried by the layout itself:
+
+     · a shared central AXIS the whole section is built around;
+     · two BACKBONES — one history either side of it — each timeline turned to face the axis,
+       so the rules and markers run down the inner edges rather than both down the left;
+     · the entries reading as PAIRS stepping down that ladder;
+     · CROSS-TIES at the years the two lives actually touch (1949, their marriage), which is the
+       one rung that genuinely joins the strands.
+
+   All of it is real structure — grid, borders, list markers — so it stays crisp at any zoom,
+   costs nothing to render, needs no script, and cannot end up floating behind the text. */
+
 .branch-columns {
   max-width: var(--container-max);
   margin: 0 auto;
@@ -166,6 +179,43 @@ main > section,
   gap: var(--space-8);
   position: relative;
   z-index: 2;
+}
+
+/* The axis. Fades at both ends so it reads as a spine the section is built on rather than a rule
+   ruled hard across it. */
+.branch-columns::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: 1px;
+  transform: translateX(-50%);
+  background: linear-gradient(
+    to bottom,
+    transparent,
+    var(--color-line-strong) 6%,
+    var(--color-line-strong) 94%,
+    transparent
+  );
+}
+
+/* Turn the left-hand history around to face the axis: its timeline rule and markers move to the
+   inner edge and its text sets flush to that edge. The right-hand history already faces inward,
+   so the two mirror each other across the spine — which is what makes the pair read as a ladder
+   instead of as two unrelated columns. */
+.branch--gold .branch__inner { text-align: right; }
+.branch--gold .timeline {
+  border-left: none;
+  border-right: 1px solid var(--color-line-strong);
+}
+.branch--gold .timeline__item {
+  padding-left: 0;
+  padding-right: var(--space-6);
+}
+.branch--gold .timeline__item::before {
+  left: auto;
+  right: -4.5px;
 }
 .branch { min-width: 0; }
 .branch__inner {
@@ -275,6 +325,37 @@ main > section,
 }
 .timeline__item p { color: var(--color-ink-soft); font-size: var(--fs-small); }
 .timeline__item--placeholder { opacity: 0.6; font-style: italic; }
+
+/* Cross-tie: a year carried by BOTH timelines, so the two strands are genuinely joined there
+   rather than merely running alongside each other. Marked by a filled marker and a short rule
+   reaching from the entry toward the axis — the structural equivalent of a base pair, drawn
+   with borders rather than with a picture of one. */
+.timeline__item--tie .timeline__year { color: var(--color-gold-deep); }
+.branch--indigo .timeline__item--tie .timeline__year { color: var(--color-indigo); }
+
+.branch--gold .timeline__item--tie::before,
+.branch--indigo .timeline__item--tie::before {
+  width: 11px;
+  height: 11px;
+  top: 4px;
+}
+.branch--gold .timeline__item--tie::before {
+  background: var(--color-gold-deep);
+  border-color: var(--color-gold-deep);
+  right: -6px;
+}
+.branch--indigo .timeline__item--tie::before {
+  background: var(--color-indigo);
+  border-color: var(--color-indigo);
+  left: -6px;
+}
+
+/* No connecting stub is drawn between the two halves of the tie. The 1949 entries sit ~200px
+   apart vertically, because each history has a different number of entries before it, so a rule
+   reaching from each toward the axis would meet nothing — two stubs at unrelated heights read as
+   stray ticks, not as a rung. Making them physically meet would need both timelines rebuilt on
+   one shared chronological grid, which would merge the two histories the Foundation wants kept
+   distinct. The filled marker and the coloured year carry the pairing on their own. */
 
 /* ---------- Convergence ---------- */
 .convergence__inner { text-align: center; max-width: 720px; margin: 0 auto; }
