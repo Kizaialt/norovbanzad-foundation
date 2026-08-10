@@ -1,37 +1,60 @@
-// Owned by the DNA-helix visual subagent. Renders/animates the strand across #helix-hero, #helix-branches, #helix-convergence.
+// DNA double-helix visual across #helix-hero, #helix-branches, #helix-convergence.
 //
-// Three inline-SVG layers built once (and rebuilt on resize/breakpoint change for the
-// measurement-dependent stages): a single sine-curve backbone in the hero, two strands
-// that fork toward the two history columns in the branches section (with per-timeline-item
-// "rung" reveals driven by IntersectionObserver), and a braided double-helix that resolves
-// back into one strand in the convergence section.
+// GEOMETRY
+// A real double helix is a NARROW object with depth: two backbones rotating about a shared
+// axis, connected by short rungs, where each backbone alternately passes in front of and behind
+// the other. The earlier version drew the two strands at the two column centres -- 558px apart
+// on desktop -- with "rungs" spanning that entire distance as horizontal lines across the
+// content. That reads as two vertical rules with page-wide horizontal rules over the text, not
+// as DNA. This version puts a properly proportioned helix in the gutter BETWEEN the columns.
 //
-// No build step, no dependencies. All motion is transform/opacity driven so it stays cheap,
-// and prefers-reduced-motion is respected both here and via the global override in base.css.
+// Projection (viewer looking down -z, helix axis vertical):
+//   theta(y) = phase + 2*pi*y/pitch
+//   A: x = cx - R(y)*sin(theta)   depth zA = cos(theta)
+//   B: x = cx + R(y)*sin(theta)   depth zB = -cos(theta)
+// Backbone B is A rotated by pi, so when one is nearest the viewer the other is furthest.
+// A rung's projected width is 2R|sin(theta)|: full at the widest point, collapsing to nothing
+// where the strands cross. That collapse is what makes a helix read as a helix.
+//
+// DEPTH is what the old flat version lacked. Each backbone is emitted as many short segments;
+// every segment and rung is sorted by its own depth and appended back-to-front, so nearer
+// geometry genuinely paints over farther geometry. Stroke width and opacity are interpolated
+// from the same depth value, so the strand thins and fades as it rotates away.
+//
+// R(y) also carries the narrative and removes a whole class of seam bug: it ramps 0 -> R at the
+// top of the branches section and R -> 0 in the convergence section. At radius 0 both backbones
+// sit exactly on the axis, vertical -- so "one strand becomes two, then becomes one again"
+// happens structurally, and adjoining sections meet at a shared point with matching tangents by
+// construction rather than by tuning.
+//
+// UNITS: each stage's SVG uses a pixel viewBox matching its stage box, so radius, pitch and
+// segment length are real pixels. Stages are rebuilt on resize.
+//
+// No build step, no dependencies. Motion is transform/opacity only; prefers-reduced-motion is
+// respected here and in helix.css.
 
 (function () {
   'use strict';
 
   var SVG_NS = 'http://www.w3.org/2000/svg';
-
   var mobileMQ = window.matchMedia('(max-width: 900px)');
-  // Ambient/scroll animation is neutralized declaratively in helix.css (and globally in
-  // base.css) via @media (prefers-reduced-motion: reduce); no JS branching needed here --
-  // reveals still fire on scroll but jump straight to their end state instead of easing in.
 
-  // ---------------------------------------------------------------------
-  // Small helpers
-  // ---------------------------------------------------------------------
+  // ---- tuning -----------------------------------------------------------
+  var SEG = 14;          // px of backbone per drawn segment (smaller = smoother, more nodes)
+  var PITCH = 260;       // px for one full 360deg turn
+  var RUNG_EVERY = 44;   // px between rungs along the axis
+  var MAX_RADIUS = 30;   // px, capped so the helix always fits the column gutter
+  var OP_BACK = 0.20, OP_FRONT = 0.92;
+  var W_BACK = 0.75, W_FRONT = 1.7;
 
-  function clamp(v, min, max) {
-    return Math.max(min, Math.min(max, v));
-  }
+  // ---- helpers ----------------------------------------------------------
 
-  function smoothstep(edge0, edge1, x) {
-    var t = clamp((x - edge0) / (edge1 - edge0), 0, 1);
+  function clamp(v, a, b) { return Math.max(a, Math.min(b, v)); }
+  function lerp(a, b, t) { return a + (b - a) * t; }
+  function smoothstep(e0, e1, x) {
+    var t = clamp((x - e0) / (e1 - e0), 0, 1);
     return t * t * (3 - 2 * t);
   }
-
   function debounce(fn, wait) {
     var timer = null;
     return function () {
@@ -40,460 +63,331 @@
       timer = setTimeout(function () { fn.apply(ctx, args); }, wait);
     };
   }
-
   function svgEl(tag, attrs) {
-    var node = document.createElementNS(SVG_NS, tag);
-    if (attrs) {
-      for (var key in attrs) {
-        if (Object.prototype.hasOwnProperty.call(attrs, key)) {
-          node.setAttribute(key, attrs[key]);
-        }
-      }
-    }
-    return node;
+    var n = document.createElementNS(SVG_NS, tag);
+    for (var k in attrs) if (Object.prototype.hasOwnProperty.call(attrs, k)) n.setAttribute(k, attrs[k]);
+    return n;
   }
-
-  function buildSvgRoot(extraClass) {
+  function buildSvg(w, h, cls) {
     return svgEl('svg', {
-      viewBox: '0 0 100 100',
+      viewBox: '0 0 ' + w + ' ' + h,
       preserveAspectRatio: 'none',
-      class: 'helix-svg' + (extraClass ? ' ' + extraClass : ''),
+      class: 'helix-svg ' + cls,
       'aria-hidden': 'true',
       focusable: 'false'
     });
   }
-
-  // Smooths a polyline of [x,y] points into a quadratic-bezier path: each
-  // original point becomes a control point, the curve passes through the
-  // midpoints between consecutive points. Cheap, precomputed once, no
-  // per-frame cost.
-  function smoothPathD(points) {
-    if (!points.length) return '';
-    var d = 'M ' + points[0][0].toFixed(2) + ' ' + points[0][1].toFixed(2);
-    for (var i = 1; i < points.length; i++) {
-      var prev = points[i - 1], cur = points[i];
-      var midX = (prev[0] + cur[0]) / 2;
-      var midY = (prev[1] + cur[1]) / 2;
-      d += ' Q ' + prev[0].toFixed(2) + ' ' + prev[1].toFixed(2) + ' ' + midX.toFixed(2) + ' ' + midY.toFixed(2);
-    }
-    var last = points[points.length - 1];
-    d += ' L ' + last[0].toFixed(2) + ' ' + last[1].toFixed(2);
-    return d;
+  // Map depth (-1 back .. +1 front) to the paint properties that sell three-dimensionality.
+  function depthStyle(node, z) {
+    var d = (z + 1) / 2;
+    node.setAttribute('stroke-width', lerp(W_BACK, W_FRONT, d).toFixed(2));
+    node.setAttribute('opacity', lerp(OP_BACK, OP_FRONT, d).toFixed(3));
   }
 
-  // Generic sine sampler over a vertical span. With phase=0 and a
-  // half-integer/integer freq, x(0) and x(1) both land exactly on x0 --
-  // handy for pinning a strand's endpoints so adjoining sections meet
-  // without a visible seam.
+  // -----------------------------------------------------------------------
+  // Core builder: emits depth-sorted backbone segments + rungs into `svg`.
   //
-  // Matching x(0)/x(1) to the neighboring section's entry point (see withBleed below) is only
-  // half of "meets without a seam" -- a sine wave has *maximum* slope exactly where it crosses
-  // zero, so even with the position pinned exactly, the curve arrives at a sharp angle while
-  // whatever it's meeting (typically another curve easing in from flat) arrives vertical. That
-  // reads as a visible kink even at 0 position-error. `edgeTaper` (0-0.5, fraction of the [0,1]
-  // domain at each end) multiplies the wobble by a smoothstep envelope that eases amplitude --
-  // and, because smoothstep's own derivative is *also* zero at its ends, the wobble's *slope*
-  // too -- down to exactly zero right at the pinned edge. The curve therefore flattens into a
-  // straight vertical line as it approaches the seam, matching a flat entry on the other side
-  // by construction instead of by a coincidental frequency choice.
-  function sinePoints(opts) {
-    var steps = opts.steps || 48;
-    var edgeTaper = opts.edgeTaper || 0;
-    var pts = [];
-    for (var i = 0; i <= steps; i++) {
-      var t = i / steps;
-      var y = opts.y0 + (opts.y1 - opts.y0) * t;
-      var envelope = edgeTaper
-        ? smoothstep(0, edgeTaper, t) * (1 - smoothstep(1 - edgeTaper, 1, t))
-        : 1;
-      var x = opts.x0 + opts.amp * envelope * Math.sin(opts.freq * Math.PI * 2 * t + (opts.phase || 0));
-      pts.push([x, y]);
+  // cfg: { y0, y1, cx, radiusAt(y), phase, classA, classB, rungClass, withRungs }
+  // Returns the rung elements in document order with their y positions, so callers can key
+  // timeline items to them.
+  // -----------------------------------------------------------------------
+  function buildHelix(svg, cfg) {
+    var theta = function (y) { return cfg.phase + 2 * Math.PI * (y / PITCH); };
+    var xA = function (y) { return cfg.cx - cfg.radiusAt(y) * Math.sin(theta(y)); };
+    var xB = function (y) { return cfg.cx + cfg.radiusAt(y) * Math.sin(theta(y)); };
+
+    var nodes = [];  // {el, z}
+    var rungs = [];  // {el, y}
+
+    // Backbone segments. Each spans SEG px and overlaps its neighbour by one sample so round
+    // caps close the joins without a visible seam.
+    var n = Math.max(2, Math.ceil((cfg.y1 - cfg.y0) / SEG));
+    for (var side = 0; side < 2; side++) {
+      var xf = side === 0 ? xA : xB;
+      var cls = side === 0 ? cfg.classA : cfg.classB;
+      for (var i = 0; i < n; i++) {
+        var ya = cfg.y0 + (cfg.y1 - cfg.y0) * (i / n);
+        var yb = cfg.y0 + (cfg.y1 - cfg.y0) * ((i + 1) / n);
+        var ym = (ya + yb) / 2;
+        // Depth of THIS segment (backbone B is antiphase, hence the sign flip).
+        var z = Math.cos(theta(ym)) * (side === 0 ? 1 : -1);
+        var seg = svgEl('path', {
+          d: 'M ' + xf(ya).toFixed(2) + ' ' + ya.toFixed(2) +
+             ' Q ' + xf(ym).toFixed(2) + ' ' + ym.toFixed(2) +
+             ' ' + xf(yb).toFixed(2) + ' ' + yb.toFixed(2),
+          class: 'helix-seg ' + cls,
+          fill: 'none'
+        });
+        depthStyle(seg, z);
+        nodes.push({ el: seg, z: z });
+      }
     }
-    return pts;
+
+    // Rungs sit on the axis, so their depth is 0 -- they land midway through the stack, which
+    // is physically right: half the backbone passes in front of them, half behind.
+    if (cfg.withRungs) {
+      for (var y = cfg.y0 + RUNG_EVERY; y < cfg.y1; y += RUNG_EVERY) {
+        var x1 = xA(y), x2 = xB(y);
+        if (Math.abs(x2 - x1) < 1.2) continue; // near a crossing: edge-on, effectively invisible
+        var rung = svgEl('line', {
+          x1: x1.toFixed(2), y1: y.toFixed(2),
+          x2: x2.toFixed(2), y2: y.toFixed(2),
+          class: 'helix-rung ' + (cfg.rungClass || ''),
+          fill: 'none'
+        });
+        depthStyle(rung, 0);
+        nodes.push({ el: rung, z: 0 });
+        rungs.push({ el: rung, y: y });
+      }
+    }
+
+    // Back-to-front paint order. This is what produces real occlusion: a nearer strand is
+    // appended later and therefore paints over the farther one where they cross.
+    nodes.sort(function (a, b) { return a.z - b.z; });
+    nodes.forEach(function (nd) { svg.appendChild(nd.el); });
+
+    return rungs;
   }
 
-  // Extends a polyline a short distance past each end, continuing the local tangent direction,
-  // and returns the new point list. Used to keep a curve's exact pin points (see sinePoints'
-  // doc above) at the *visible* clip edges of a .helix-stage -- y=0 and y=100 -- while still
-  // giving the stroke a soft bleed past those edges instead of reading as a hard cut. Sampling
-  // the pinned math directly over an overscanned range (e.g. y -2..102) instead of doing this
-  // is what caused the original seam bug: a zero-crossing guaranteed at the *overscan* edge
-  // doesn't land on the *visible* edge, so adjoining sections' strands met a fraction of a
-  // percent off target -- small, but visible once zoomed in, and only made worse by any
-  // animation applied to the endpoint (see the hero breathe keyframes in helix.css, which are
-  // anchored at the seam point for the same reason). Doing the bleed as a separate step after
-  // the pinned points are generated means it can never reintroduce that drift.
-  function withBleed(points, bleedAmt) {
-    if (points.length < 2 || !bleedAmt) return points;
-    function extend(a, b, amt) {
-      var dx = a[0] - b[0], dy = a[1] - b[1];
-      var len = Math.hypot(dx, dy) || 1;
-      return [a[0] + (dx / len) * amt, a[1] + (dy / len) * amt];
-    }
-    var lead = extend(points[0], points[1], bleedAmt);
-    var trail = extend(points[points.length - 1], points[points.length - 2], bleedAmt);
-    return [lead].concat(points, [trail]);
-  }
-
-  // Builds the points for a strand that starts centered (x=50) at the top
-  // of the branches section, curves out toward targetX by forkY, then
-  // continues down with a gentle wobble that is pinned back to exactly
-  // targetX at the very bottom (so the convergence section's strand,
-  // which starts at the same targetX, meets it with no jump).
-  //
-  // The leading [50,-2] / [50, forkY*0.4] control points both sit at x=50, so the visible top
-  // edge (y=0, which falls between them) is exactly x=50 too -- already correctly pinned to
-  // hero's fixed bottom endpoint. The wobble loop below is sampled up to the exact visible
-  // bottom edge (y=100), not an overscanned y=102, for the same reason described on withBleed:
-  // pinning a zero-crossing to an overscan edge doesn't pin it to the edge that actually has to
-  // line up with convergence's strand. Bleed past y=100 is added by the caller via withBleed.
-  function forkedStrandPoints(targetX, forkY, opts) {
-    opts = opts || {};
-    var amp = opts.amp != null ? opts.amp : 2;
-    var halfPeriods = opts.halfPeriods != null ? opts.halfPeriods : 3;
-    var steps = opts.steps || 40;
-    var pts = [
-      [50, -2],
-      [50, forkY * 0.4],
-      [(50 + targetX) / 2, forkY * 0.78],
-      [targetX, forkY]
-    ];
-    // Tapers to zero amplitude *and* zero slope by tl=1 (last 30% of this span) -- same
-    // reasoning as sinePoints' edgeTaper -- so the strand flattens to vertical right where it
-    // has to meet convergence's entry, which is already vertical there via its own smoothstep
-    // envelope (see renderConvergence). Only the trailing edge needs this: the leading edge
-    // is already flat by construction (the [50,-2]/[50,forkY*0.4] control points above share
-    // x=50, so the curve is vertical through the whole span between them).
-    var tailTaper = 0.3;
-    for (var i = 1; i <= steps; i++) {
-      var tl = i / steps;
-      var y = forkY + (100 - forkY) * tl;
-      var envelope = 1 - smoothstep(1 - tailTaper, 1, tl);
-      var x = targetX + amp * envelope * Math.sin(halfPeriods * Math.PI * tl);
-      pts.push([x, y]);
-    }
-    return pts;
-  }
-
-  // ---------------------------------------------------------------------
-  // Stage-level entrance (fade the whole layer in once its section is
-  // within view; hero fires this almost immediately since it's the first
-  // thing on the page).
-  // ---------------------------------------------------------------------
-
+  // -----------------------------------------------------------------------
+  // Stage fade-in
+  // -----------------------------------------------------------------------
   var stageObserver = null;
-
   function setupStageFade() {
     var stages = document.querySelectorAll('.helix-stage');
     if (!stages.length) return;
     if (stageObserver) stageObserver.disconnect();
     stageObserver = new IntersectionObserver(function (entries) {
-      entries.forEach(function (entry) {
-        if (entry.isIntersecting) {
-          entry.target.classList.add('is-visible');
-          stageObserver.unobserve(entry.target);
-        }
+      entries.forEach(function (e) {
+        if (e.isIntersecting) { e.target.classList.add('is-visible'); stageObserver.unobserve(e.target); }
       });
-    }, { threshold: 0.15 });
-    stages.forEach(function (stage) { stageObserver.observe(stage); });
+    }, { threshold: 0.1 });
+    stages.forEach(function (s) { stageObserver.observe(s); });
   }
 
-  // ---------------------------------------------------------------------
-  // Hero -- single unbranched backbone
-  // ---------------------------------------------------------------------
-
+  // -----------------------------------------------------------------------
+  // Hero -- a single strand, not yet split. Ends dead-centre and vertical so the branches
+  // helix (which opens from radius 0) continues it without a seam.
+  // -----------------------------------------------------------------------
   function renderHero() {
-    var container = document.getElementById('helix-hero');
-    if (!container) return;
-    container.innerHTML = '';
+    var el = document.getElementById('helix-hero');
+    if (!el) return;
+    var r = el.getBoundingClientRect();
+    if (!r.width || !r.height) return;
+    el.innerHTML = '';
 
-    var svg = buildSvgRoot('helix-svg--hero');
+    var w = Math.round(r.width), h = Math.round(r.height);
+    var svg = buildSvg(w, h, 'helix-svg--hero');
+    var cx = w / 2;
+    var amp = Math.min(34, w * 0.035);
 
-    // Flat, single muted tone (--color-strand-neutral, tokens.css) rather than a gold-to-indigo
-    // gradient: this hero strand represents "one life" before it differentiates into the gold
-    // and indigo identities in the branches section, so it reads more calmly -- and more on
-    // theme -- as undifferentiated than as a strand that's already halfway between two colors.
-    // freq 1.5 => 3 half-periods, phase 0 => pinned to x=50 at both ends -- sampled over the
-    // exact visible span (0-100) so the pin lands on the real bottom edge, where this strand
-    // has to meet the branches strand's fixed start point. edgeTaper flattens the approach to
-    // vertical at both ends (see sinePoints doc) so it meets branches' also-vertical entry
-    // smoothly instead of at an angle. Bleed is added separately below. A gentler amplitude
-    // (3.5 rather than 5) keeps the motion calm -- quiet enough not to pull the eye.
-    var pts = withBleed(sinePoints({ x0: 50, y0: 0, y1: 100, amp: 3.5, freq: 1.5, phase: 0, steps: 48, edgeTaper: 0.16 }), 3);
-    var path = svgEl('path', { d: smoothPathD(pts), class: 'helix-strand helix-strand--hero', fill: 'none' });
-    svg.appendChild(path);
+    // Amplitude eases to 0 at both ends: the strand enters and leaves perfectly vertical.
+    var pts = [];
+    var steps = 60;
+    for (var i = 0; i <= steps; i++) {
+      var t = i / steps;
+      var y = -4 + (h + 8) * t;
+      var env = smoothstep(0, 0.28, t) * (1 - smoothstep(0.72, 1, t));
+      pts.push([cx + amp * env * Math.sin(Math.PI * 2 * 1.25 * t), y]);
+    }
+    var d = 'M ' + pts[0][0].toFixed(2) + ' ' + pts[0][1].toFixed(2);
+    for (var k = 1; k < pts.length; k++) {
+      var p0 = pts[k - 1], p1 = pts[k];
+      d += ' Q ' + p0[0].toFixed(2) + ' ' + p0[1].toFixed(2) + ' ' +
+           ((p0[0] + p1[0]) / 2).toFixed(2) + ' ' + ((p0[1] + p1[1]) / 2).toFixed(2);
+    }
+    d += ' L ' + pts[pts.length - 1][0].toFixed(2) + ' ' + pts[pts.length - 1][1].toFixed(2);
 
-    container.appendChild(svg);
+    svg.appendChild(svgEl('path', { d: d, class: 'helix-seg helix-seg--single', fill: 'none' }));
+    el.appendChild(svg);
   }
 
-  // ---------------------------------------------------------------------
-  // Branches -- measurement, desktop fork, mobile single-strand fallback
-  // ---------------------------------------------------------------------
-
+  // -----------------------------------------------------------------------
+  // Branches -- the helix proper, living in the gutter between the two columns
+  // -----------------------------------------------------------------------
   function measureBranches() {
     var section = document.getElementById('branches');
-    // Measure against `stage` (the actual .helix-stage div the SVG is injected into), not
-    // `section`. `.helix-stage` is `position:absolute; inset:0` inside `section`, and per the
-    // CSS containing-block spec that positions it against `section`'s *padding* box -- which is
-    // shorter than `section.getBoundingClientRect()` (the border box) whenever the section has
-    // vertical padding, as `main > section` always does. Using the section's rect as the 0-100%
-    // reference therefore mapped every rung/strand position onto the wrong box and made them
-    // drift away from the real column/timeline positions. Measuring `stage` directly is correct
-    // by construction -- it's exactly the box the SVG stretches to fill -- so this stays correct
-    // no matter how the section's padding (or any other spacing token) changes later.
     var stage = document.getElementById('helix-branches');
-    var goldCol = document.getElementById('branch-norovbanzad');
-    var indigoCol = document.getElementById('branch-banzragch');
-    if (!section || !stage || !goldCol || !indigoCol) return null;
+    var gold = document.getElementById('branch-norovbanzad');
+    var indigo = document.getElementById('branch-banzragch');
+    if (!section || !stage || !gold || !indigo) return null;
 
-    var stageRect = stage.getBoundingClientRect();
-    if (!stageRect.width || !stageRect.height) return null;
+    // Measured against `stage` -- the element the SVG actually fills. `.helix-stage` is
+    // position:absolute; inset:0, which resolves against the section's PADDING box, not its
+    // border box, so using the section's rect would offset everything by its vertical padding.
+    var sr = stage.getBoundingClientRect();
+    if (!sr.width || !sr.height) return null;
 
-    var goldRect = goldCol.getBoundingClientRect();
-    var indigoRect = indigoCol.getBoundingClientRect();
+    var gr = gold.getBoundingClientRect();
+    var ir = indigo.getBoundingClientRect();
+    var stacked = ir.top > gr.bottom - 1; // mobile: columns stacked rather than side by side
 
-    var goldX = clamp(((goldRect.left + goldRect.width / 2) - stageRect.left) / stageRect.width * 100, 5, 95);
-    var indigoX = clamp(((indigoRect.left + indigoRect.width / 2) - stageRect.left) / stageRect.width * 100, 5, 95);
-    var boundaryY = clamp(((indigoRect.top) - stageRect.top) / stageRect.height * 100, 5, 95);
-
-    var itemNodes = Array.prototype.slice.call(section.querySelectorAll('.timeline__item'));
-    var items = itemNodes.map(function (node) {
+    var items = Array.prototype.slice.call(section.querySelectorAll('.timeline__item')).map(function (node) {
       var r = node.getBoundingClientRect();
-      var y = clamp(((r.top + r.height / 2) - stageRect.top) / stageRect.height * 100, 2, 98);
-      var col = node.closest('.branch--gold') ? 'gold' : 'indigo';
-      return { el: node, y: y, col: col };
+      return {
+        el: node,
+        y: (r.top + r.height / 2) - sr.top,
+        col: node.closest('.branch--gold') ? 'gold' : 'indigo'
+      };
     });
 
-    return { goldX: goldX, indigoX: indigoX, boundaryY: boundaryY, items: items };
-  }
+    var cx, radius;
+    if (stacked) {
+      cx = sr.width / 2;
+      radius = Math.min(MAX_RADIUS * 0.6, sr.width * 0.05);
+    } else {
+      // Centre of the gutter, and a radius that always fits inside it.
+      cx = ((gr.right + ir.left) / 2) - sr.left;
+      radius = Math.min(MAX_RADIUS, Math.max(10, (ir.left - gr.right) * 0.42));
+    }
 
-  function renderBranchesDesktop(container, layout) {
-    var svg = buildSvgRoot('helix-svg--branches');
-    var forkY = 12;
-
-    // Bleed only past the bottom (index -1): the top already reads as continuous into the hero
-    // strand via the flat x=50 lead-in built into forkedStrandPoints, with no cut edge there.
-    var goldPts = withBleed(forkedStrandPoints(layout.goldX, forkY, { amp: 1.3, halfPeriods: 3 }), 3).slice(1);
-    var indigoPts = withBleed(forkedStrandPoints(layout.indigoX, forkY, { amp: 1.3, halfPeriods: 4 }), 3).slice(1);
-
-    var goldPath = svgEl('path', { d: smoothPathD(goldPts), class: 'helix-strand helix-strand--gold', fill: 'none' });
-    var indigoPath = svgEl('path', { d: smoothPathD(indigoPts), class: 'helix-strand helix-strand--indigo', fill: 'none' });
-    svg.appendChild(goldPath);
-    svg.appendChild(indigoPath);
-
-    var rungGroup = svgEl('g', { class: 'helix-rungs' });
-    svg.appendChild(rungGroup);
-
-    var midX = (layout.goldX + layout.indigoX) / 2;
-
-    var refs = layout.items.map(function (item) {
-      var y = item.y.toFixed(2);
-      var leftHalf = svgEl('line', {
-        x1: layout.goldX.toFixed(2), y1: y, x2: midX.toFixed(2), y2: y,
-        class: 'helix-rung-half helix-rung-half--gold', fill: 'none'
-      });
-      var rightHalf = svgEl('line', {
-        x1: midX.toFixed(2), y1: y, x2: layout.indigoX.toFixed(2), y2: y,
-        class: 'helix-rung-half helix-rung-half--indigo', fill: 'none'
-      });
-      rungGroup.appendChild(leftHalf);
-      rungGroup.appendChild(rightHalf);
-      return [leftHalf, rightHalf];
-    });
-
-    container.appendChild(svg);
-    return refs;
-  }
-
-  function renderBranchesMobile(container, layout) {
-    var svg = buildSvgRoot('helix-svg--branches helix-svg--branches-mobile');
-    var defs = svgEl('defs');
-    var gradId = 'helix-branches-mobile-grad';
-    var grad = svgEl('linearGradient', { id: gradId, x1: '0', y1: '0', x2: '0', y2: '1' });
-    var b = layout.boundaryY;
-    var s1 = clamp(b - 10, 0, 100), s2 = clamp(b + 10, 0, 100);
-    [[0, '--color-strand-gold'], [s1, '--color-strand-gold'], [s2, '--color-strand-indigo'], [100, '--color-strand-indigo']].forEach(function (pair) {
-      grad.appendChild(svgEl('stop', { offset: pair[0] + '%', 'stop-color': 'var(' + pair[1] + ')' }));
-    });
-    defs.appendChild(grad);
-    svg.appendChild(defs);
-
-    // freq 2 => 4 half-periods, phase 0 => pinned to x=50 at both ends -- see renderHero for
-    // why this samples the exact visible span, tapers to a flat approach at each end, and
-    // bleeds separately rather than overscanning.
-    var pts = withBleed(sinePoints({ x0: 50, y0: 0, y1: 100, amp: 2.5, freq: 2, phase: 0, steps: 48, edgeTaper: 0.16 }), 3);
-    var path = svgEl('path', { d: smoothPathD(pts), class: 'helix-strand helix-strand--mobile', fill: 'none' });
-    path.style.stroke = 'url(#' + gradId + ')';
-    svg.appendChild(path);
-
-    var tickGroup = svgEl('g', { class: 'helix-ticks' });
-    svg.appendChild(tickGroup);
-
-    var refs = layout.items.map(function (item) {
-      var y = item.y.toFixed(2);
-      var isGold = item.col === 'gold';
-      var x2 = isGold ? 50 - 7 : 50 + 7;
-      var tick = svgEl('line', {
-        x1: '50', y1: y, x2: x2.toFixed(2), y2: y,
-        class: 'helix-tick ' + (isGold ? 'helix-tick--gold' : 'helix-tick--indigo'),
-        fill: 'none'
-      });
-      tickGroup.appendChild(tick);
-      return [tick];
-    });
-
-    container.appendChild(svg);
-    return refs;
+    return { w: Math.round(sr.width), h: Math.round(sr.height), cx: cx, radius: radius, items: items, stacked: stacked };
   }
 
   var branchObserver = null;
-  var branchRungRefs = [];
-  var activatedBranchItems = new Set();
+  var keyedRungs = [];              // index-aligned with layout.items
+  var activated = new Set();
 
-  function applyActive(idx) {
-    var refs = branchRungRefs[idx];
-    if (!refs) return;
-    refs.forEach(function (node) { node.classList.add('is-active'); });
+  function activate(idx) {
+    var rec = keyedRungs[idx];
+    if (rec && rec.el) rec.el.classList.add('is-active');
   }
 
   function setupBranchObserver(items) {
     if (branchObserver) branchObserver.disconnect();
     branchObserver = new IntersectionObserver(function (entries) {
-      entries.forEach(function (entry) {
-        var idx = entry.target.__helixIdx;
-        if (entry.isIntersecting && !activatedBranchItems.has(idx)) {
-          activatedBranchItems.add(idx);
-          applyActive(idx);
-          branchObserver.unobserve(entry.target);
+      entries.forEach(function (e) {
+        var idx = e.target.__helixIdx;
+        if (e.isIntersecting && !activated.has(idx)) {
+          activated.add(idx);
+          activate(idx);
+          branchObserver.unobserve(e.target);
         }
       });
     }, { threshold: 0.3, rootMargin: '0px 0px -10% 0px' });
 
-    items.forEach(function (item, idx) {
-      item.el.__helixIdx = idx;
-      if (!activatedBranchItems.has(idx)) branchObserver.observe(item.el);
+    items.forEach(function (it, idx) {
+      it.el.__helixIdx = idx;
+      if (!activated.has(idx)) branchObserver.observe(it.el);
     });
   }
 
   function renderBranches() {
-    var container = document.getElementById('helix-branches');
-    if (!container) return;
-    var layout = measureBranches();
-    if (!layout) return;
+    var el = document.getElementById('helix-branches');
+    if (!el) return;
+    var L = measureBranches();
+    if (!L) return;
+    el.innerHTML = '';
 
-    container.innerHTML = '';
-    var refs = mobileMQ.matches ? renderBranchesMobile(container, layout) : renderBranchesDesktop(container, layout);
-    branchRungRefs = refs;
+    var svg = buildSvg(L.w, L.h, 'helix-svg--branches' + (L.stacked ? ' helix-svg--stacked' : ''));
 
-    setupBranchObserver(layout.items);
-    activatedBranchItems.forEach(function (idx) { applyActive(idx); });
+    // Radius opens from 0 (continuing the hero's single strand) and stays open at the bottom,
+    // where the convergence section picks it up at the same radius.
+    var openBy = Math.min(220, L.h * 0.08);
+    var radiusAt = function (y) { return L.radius * smoothstep(0, openBy, y); };
+
+    var rungs = buildHelix(svg, {
+      y0: -4, y1: L.h + 4, cx: L.cx, radiusAt: radiusAt, phase: 0,
+      classA: 'helix-seg--gold', classB: 'helix-seg--indigo',
+      rungClass: '', withRungs: true
+    });
+
+    el.appendChild(svg);
+
+    // Rungs are laid out on the helix's own rhythm (a helix with irregular rung spacing stops
+    // looking like one). Each timeline item is keyed to its nearest rung, so scroll reveals
+    // track the content without distorting the geometry.
+    //
+    // Claiming is exclusive: two items whose midpoints fall near the same rung would otherwise
+    // share it, and the second item's reveal would light a rung that is already lit. Items are
+    // assigned in order of how good their best match is, so the closest pairings win and no
+    // item is left without its own base pair (there are far more rungs than items).
+    var claimed = new Set();
+    var order = L.items.map(function (it, idx) {
+      var best = null, bestD = Infinity;
+      rungs.forEach(function (r, ri) {
+        var d = Math.abs(r.y - it.y);
+        if (d < bestD) { bestD = d; best = ri; }
+      });
+      return { idx: idx, y: it.y, bestD: bestD };
+    }).sort(function (a, b) { return a.bestD - b.bestD; });
+
+    keyedRungs = new Array(L.items.length);
+    order.forEach(function (rec) {
+      var best = null, bestD = Infinity;
+      rungs.forEach(function (r, ri) {
+        if (claimed.has(ri)) return;
+        var d = Math.abs(r.y - rec.y);
+        if (d < bestD) { bestD = d; best = ri; }
+      });
+      if (best !== null) {
+        claimed.add(best);
+        rungs[best].el.classList.add('helix-rung--keyed');
+        keyedRungs[rec.idx] = rungs[best];
+      }
+    });
+
+    setupBranchObserver(L.items);
+    activated.forEach(activate);
   }
 
-  // ---------------------------------------------------------------------
-  // Convergence -- braid that resolves into one strand
-  // ---------------------------------------------------------------------
-
+  // -----------------------------------------------------------------------
+  // Convergence -- the helix closes back into a single strand
+  // -----------------------------------------------------------------------
   function renderConvergence() {
-    var container = document.getElementById('helix-convergence');
-    if (!container) return;
-    container.innerHTML = '';
+    var el = document.getElementById('helix-convergence');
+    if (!el) return;
+    var r = el.getBoundingClientRect();
+    if (!r.width || !r.height) return;
+    el.innerHTML = '';
 
-    var layout = measureBranches();
-    var goldEntryX = layout ? layout.goldX : 28;
-    var indigoEntryX = layout ? layout.indigoX : 72;
+    var w = Math.round(r.width), h = Math.round(r.height);
+    var svg = buildSvg(w, h, 'helix-svg--convergence');
 
-    var svg = buildSvgRoot('helix-svg--convergence');
+    var B = measureBranches();
+    var radius = B ? B.radius : MAX_RADIUS;
+    var cx = w / 2;
 
-    var steps = 90;
-    // t1 governs how much room baseG/baseI get to travel from the branches' entry X back to
-    // center. Its slope is exactly zero at t=0 (smoothstep's edge property), but with the
-    // original t1=0.16 that full swing still had to happen over a short span, so it picked up
-    // visible curvature within the first couple of percent -- a softer, but same-shaped, echo
-    // of the seam issue fixed above. Widening it gives the same zero-slope start more room to
-    // stay flat before curving away, without changing when the braid oscillation (t2-t4) kicks in.
-    var t1 = 0.24, t2 = 0.3, t3 = 0.6, t4 = 0.72;
-    var ampMax = 6, periodsVisible = 2.5;
-    var freq = periodsVisible / (t3 - t2);
+    // Full radius at the top (matching the branches helix), closing to 0 by ~62% -- after which
+    // both backbones lie on the axis and read as one strand running out of the section.
+    var closeStart = h * 0.12, closeEnd = h * 0.62;
+    var radiusAt = function (y) { return radius * (1 - smoothstep(closeStart, closeEnd, y)); };
 
-    var goldPts = [], indigoPts = [];
-    for (var i = 0; i <= steps; i++) {
-      var t = i / steps;
-      // t=0 => y=0, the exact visible top edge. baseG/baseI are already exactly goldEntryX /
-      // indigoEntryX at t=0 (smoothstep(0,t1,0) is 0 by construction), so mapping t straight
-      // onto the true visible span -- rather than an overscanned -2..102 the way this used to
-      // read -- pins that exact value to the edge that actually has to meet branches' now-exact
-      // bottom pin, instead of to an off-screen point a fraction of a percent away from it.
-      var y = 100 * t;
-      var baseG = goldEntryX + (50 - goldEntryX) * smoothstep(0, t1, t);
-      var baseI = indigoEntryX + (50 - indigoEntryX) * smoothstep(0, t1, t);
-      var env = smoothstep(t1, t2, t) * (1 - smoothstep(t3, t4, t));
-      var osc = ampMax * Math.sin(freq * Math.PI * 2 * t);
-      goldPts.push([baseG + env * osc, y]);
-      indigoPts.push([baseI - env * osc, y]);
-    }
-    // Bleed only past the top; the bottom already dissolves via the CSS mask-image fade in
-    // helix.css, so it doesn't need (or want) a hard-edged extension.
-    goldPts = withBleed(goldPts, 3).slice(0, -1);
-    indigoPts = withBleed(indigoPts, 3).slice(0, -1);
+    buildHelix(svg, {
+      y0: -4, y1: h + 4, cx: cx, radiusAt: radiusAt, phase: 0,
+      classA: 'helix-seg--gold', classB: 'helix-seg--indigo',
+      withRungs: true
+    });
 
-    var goldPath = svgEl('path', { d: smoothPathD(goldPts), class: 'helix-strand helix-strand--gold', fill: 'none' });
-    var indigoPath = svgEl('path', { d: smoothPathD(indigoPts), class: 'helix-strand helix-strand--indigo', fill: 'none' });
-    svg.appendChild(indigoPath);
-    svg.appendChild(goldPath);
-
-    // Small "base pair" nodes at each braid crossing (where the oscillation
-    // term is exactly zero), echoing the rung motif from the branches stage.
-    for (var k = 1; k < 200; k++) {
-      var tc = k / (2 * freq);
-      if (tc <= t2 + 0.015) continue;
-      if (tc >= t3 - 0.015) break;
-      var ny = 100 * tc; // must match the strand loop's y-mapping above, or the dots drift off the actual crossing points
-      svg.appendChild(svgEl('circle', { cx: '50', cy: ny.toFixed(2), r: '1.1', class: 'helix-braid-node' }));
-    }
-
-    container.appendChild(svg);
+    el.appendChild(svg);
   }
 
-  // ---------------------------------------------------------------------
-  // Init + responsive re-render
-  // ---------------------------------------------------------------------
-
-  function init() {
+  // -----------------------------------------------------------------------
+  // Init
+  // -----------------------------------------------------------------------
+  function renderAll() {
     renderHero();
     renderBranches();
     renderConvergence();
+  }
+
+  function init() {
+    renderAll();
     setupStageFade();
 
-    var onResize = debounce(function () {
-      renderBranches();
-      renderConvergence();
-    }, 150);
-    window.addEventListener('resize', onResize, { passive: true });
+    window.addEventListener('resize', debounce(renderAll, 150), { passive: true });
 
-    var onLayoutModeChange = function () { renderBranches(); renderConvergence(); };
-    if (typeof mobileMQ.addEventListener === 'function') {
-      mobileMQ.addEventListener('change', onLayoutModeChange);
-    } else if (typeof mobileMQ.addListener === 'function') {
-      mobileMQ.addListener(onLayoutModeChange);
-    }
+    var onMode = function () { renderAll(); };
+    if (mobileMQ.addEventListener) mobileMQ.addEventListener('change', onMode);
+    else if (mobileMQ.addListener) mobileMQ.addListener(onMode);
 
-    // Re-measure once webfonts settle, since Playfair/Inter swapping in can
-    // shift column/line heights slightly after the first paint.
+    // Webfonts change column heights after first paint, which moves every measured position.
     if (document.fonts && document.fonts.ready) {
-      document.fonts.ready.then(function () {
-        renderBranches();
-        renderConvergence();
-      }).catch(function () {});
+      document.fonts.ready.then(renderAll).catch(function () {});
     }
-    window.addEventListener('load', function () {
-      renderBranches();
-      renderConvergence();
-    }, { once: true });
+    window.addEventListener('load', renderAll, { once: true });
   }
 
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', init);
-  } else {
-    init();
-  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
+  else init();
 })();

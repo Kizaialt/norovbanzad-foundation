@@ -1,11 +1,11 @@
-/* Owned by the DNA-helix visual subagent. Styles for #helix-hero, #helix-branches, #helix-convergence layers.
-   Structure: each .helix-stage is an absolutely-positioned, non-interactive layer sitting
-   behind its section's .container (z-index: 2 there, z-index: 1 here). helix.js injects one
-   inline <svg> (preserveAspectRatio="none", viewBox 0 0 100 100) per stage; positions below
-   are therefore in that 0-100 percentage space, scaled independently on each axis to fill
-   the section -- which is what lets a sine curve or a fork stay proportionally placed at any
-   viewport size without a JS resize-recompute for the hero (branches/convergence, whose
-   paths depend on measured column positions, are rebuilt on resize by helix.js instead). */
+/* DNA double-helix layer. Geometry, depth sorting and per-node opacity/stroke-width are
+   computed in helix.js (see the header there for the projection and depth model); this file
+   owns the layer's placement, colour and motion.
+
+   Each .helix-stage is an absolutely-positioned, non-interactive layer behind its section's
+   .container (z-index 2 there, 1 here). helix.js injects one inline <svg> per stage whose
+   viewBox is in PIXELS and matches the stage box, so nothing here needs to compensate for
+   viewBox scaling. */
 
 .helix-stage {
   position: absolute;
@@ -16,143 +16,94 @@
   opacity: 0;
   transition: opacity var(--dur-slow) var(--ease-elegant);
 }
-.helix-stage.is-visible {
-  opacity: 1;
-}
+.helix-stage.is-visible { opacity: 1; }
 
 .helix-svg {
   width: 100%;
   height: 100%;
   display: block;
-  overflow: visible; /* let strands bleed slightly past 0/100 so .helix-stage's own
-                         overflow:hidden -- not the SVG viewport -- is what clips the edge */
+  overflow: visible;
 }
 
-/* ---------- Shared strand look ---------- */
+/* ---------- Strands ----------
+   stroke-width and opacity are set per node by helix.js from that node's depth, so they are
+   deliberately NOT declared here -- a value in this file would either be overridden or would
+   flatten the three-dimensional read. Only colour and cap style are styled here. */
 
-.helix-strand {
+.helix-seg {
   fill: none;
-  stroke-width: 1.1;
-  vector-effect: non-scaling-stroke; /* keep the line ~1-1.5px regardless of viewBox scale */
   stroke-linecap: round;
-  stroke-linejoin: round;
-  opacity: 1;
-  /* Quiet is a property of *color and motion*, not transparency: these strands render at full
-     opacity in desaturated, high-luminance tints (--color-strand-*, tokens.css) rather than
-     vivid brand colors dimmed down. Alpha-blending a bright color into a light background
-     antialiases into a soft, slightly muddy edge -- and stacking that with a fade-in mask
-     right at a seam (removed below) made the joint itself read as a near-blank gap instead of
-     a connection. A muted color at full opacity stays crisp and legible while still receding
-     behind the page's actual content. */
+  vector-effect: non-scaling-stroke;
 }
 
-/* ---------- Hero: single backbone, gently breathing ---------- */
+.helix-seg--gold { stroke: var(--color-strand-gold); }
+.helix-seg--indigo { stroke: var(--color-strand-indigo); }
 
-.helix-strand--hero {
+/* The hero's single, undifferentiated strand: one life before it becomes two. */
+.helix-seg--single {
   stroke: var(--color-strand-neutral);
+  stroke-width: 1.3;
+  opacity: 0.75;
 }
 
+/* ---------- Rungs (base pairs) ----------
+   Every rung is drawn faintly so the helix reads as a continuous object. Rungs keyed to a
+   timeline item brighten as that item scrolls into view -- content drives emphasis, not
+   geometry. */
+
+.helix-rung {
+  fill: none;
+  stroke: var(--color-strand-neutral);
+  stroke-linecap: round;
+  vector-effect: non-scaling-stroke;
+  transition: stroke var(--dur-slow) var(--ease-elegant);
+}
+
+.helix-rung--keyed {
+  /* Scale from the rung's own centre so it grows outward from the axis, the way a base pair
+     would. transform-box: fill-box makes 50% resolve against the element, not the SVG root. */
+  transform-box: fill-box;
+  transform-origin: 50% 50%;
+  transform: scaleX(0.15);
+  transition:
+    transform var(--dur-slow) var(--ease-elegant),
+    stroke var(--dur-slow) var(--ease-elegant);
+}
+.helix-rung--keyed.is-active {
+  transform: scaleX(1);
+  stroke: var(--color-gold-deep);
+}
+
+/* ---------- Hero: slow ambient breathing ----------
+   Anchored at bottom-centre -- the exact point where this strand hands over to the branches
+   helix. Scaling about that point leaves it fixed and sways only the rest of the curve; a
+   translate would move the handover point and make the join drift through the cycle. */
 #helix-hero .helix-svg {
-  animation: helix-breathe 16s ease-in-out infinite alternate;
-  /* Anchored at bottom-center -- exactly the seam point (x=50, y=100) that has to meet the
-     branches strand's fixed start. scale() around that point leaves it stationary and only
-     sways the rest of the curve; the old translateX() shifted the whole strand uniformly,
-     which shifted that endpoint too and made the seam visibly drift through the animation
-     cycle (see helix.js's withBleed doc for the matching static-precision half of this fix). */
+  animation: helix-breathe 18s ease-in-out infinite alternate;
   transform-origin: 50% 100%;
   will-change: transform;
 }
-
 @keyframes helix-breathe {
-  0%   { transform: scale(0.985, 0.997); }
-  100% { transform: scale(1.015, 1.003); }
+  0%   { transform: scale(0.99, 0.998); }
+  100% { transform: scale(1.01, 1.002); }
 }
 
-/* ---------- Branches: gold/indigo fork + scroll-revealed rungs ---------- */
-
-.helix-strand--gold {
-  stroke: var(--color-strand-gold);
-}
-.helix-strand--indigo {
-  stroke: var(--color-strand-indigo);
-}
-
-/* Each timeline item gets a rung split into two halves that "unzip" outward
-   from the spine toward each strand as the item scrolls into view. */
-.helix-rung-half {
-  fill: none;
-  stroke-width: 1.2;
-  vector-effect: non-scaling-stroke;
-  stroke-linecap: round;
-  transform-box: fill-box;
-  opacity: 0;
-  transform: scaleX(0);
-  transition: opacity var(--dur-med) var(--ease-elegant), transform var(--dur-slow) var(--ease-elegant);
-}
-.helix-rung-half--gold {
-  stroke: var(--color-gold-deep);
-  transform-origin: 100% 50%;
-}
-.helix-rung-half--indigo {
-  stroke: var(--color-indigo);
-  transform-origin: 0% 50%;
-}
-.helix-rung-half.is-active {
-  opacity: 0.85;
-  transform: scaleX(1);
-}
-
-/* ---------- Branches, mobile fallback: single accent strand + ticks ---------- */
-
-
-.helix-tick {
-  fill: none;
-  stroke-width: 1.2;
-  vector-effect: non-scaling-stroke;
-  stroke-linecap: round;
-  transform-box: fill-box;
-  opacity: 0;
-  transform: scaleX(0);
-  transition: opacity var(--dur-med) var(--ease-elegant), transform var(--dur-slow) var(--ease-elegant);
-}
-.helix-tick--gold {
-  stroke: var(--color-gold-deep);
-  transform-origin: 100% 50%;
-}
-.helix-tick--indigo {
-  stroke: var(--color-indigo);
-  transform-origin: 0% 50%;
-}
-.helix-tick.is-active {
-  opacity: 0.85;
-  transform: scaleX(1);
-}
-
-/* ---------- Convergence: braid resolving into one strand ---------- */
-
-.helix-braid-node {
-  fill: var(--color-line-strong);
-  opacity: 0.5;
-}
-
-/* Fade the braid/strand out near the bottom of the section so it reads as
-   handing off into the Get Involved section below, rather than cutting off. */
+/* Fade the tail so the helix hands off to the section below rather than cutting off flat. */
 #helix-convergence .helix-svg {
-  -webkit-mask-image: linear-gradient(to bottom, #000 0%, #000 85%, transparent 100%);
-          mask-image: linear-gradient(to bottom, #000 0%, #000 85%, transparent 100%);
+  -webkit-mask-image: linear-gradient(to bottom, #000 0%, #000 82%, transparent 100%);
+          mask-image: linear-gradient(to bottom, #000 0%, #000 82%, transparent 100%);
 }
 
-/* ---------- Reduced motion ---------- */
-/* base.css already forces near-zero animation/transition durations globally under this
-   query; these rules make the intent explicit for the helix layer specifically and fully
-   remove the ambient loop rather than just shortening it. */
+/* On stacked (mobile) layouts the helix runs behind the cards rather than in a gutter, so it
+   is pulled back to stay clearly subordinate to the text in front of it. */
+.helix-svg--stacked { opacity: 0.55; }
+
+/* ---------- Reduced motion ----------
+   base.css already collapses animation/transition durations globally; these rules make the
+   intent explicit for this layer and remove the ambient loop outright rather than shortening
+   it. Keyed rungs are shown at full width so nothing is left mid-animation. */
 @media (prefers-reduced-motion: reduce) {
-  #helix-hero .helix-svg {
-    animation: none;
-  }
-  .helix-stage,
-  .helix-rung-half,
-  .helix-tick {
-    transition: none;
-  }
+  #helix-hero .helix-svg { animation: none; }
+  .helix-stage, .helix-rung, .helix-rung--keyed { transition: none; }
+  .helix-rung--keyed { transform: scaleX(1); }
 }
