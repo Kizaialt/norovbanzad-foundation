@@ -99,7 +99,7 @@ window.I18N_EN = {
   // ---- News & events ----
   'n.eyebrow': 'News and events',
   'n.title': 'What the Foundation is doing now.',
-  'n.lede': 'Concerts, masterclasses, publications and archive releases. [PLACEHOLDER: replace these entries with real ones — an empty or stale news section reads as a dormant foundation.]',
+  'n.lede': 'Concerts, masterclasses, publications and archive releases. [PLACEHOLDER: name the real upcoming concerts, workshops, publications, or archive releases here.]',
   'n.upcoming': 'Upcoming',
   'n.recent': 'Recent',
   'n.ev1.title': '[PLACEHOLDER: event title]',
