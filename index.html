@@ -120,8 +120,8 @@
           </figure>
 
           <p class="branch__summary" data-i18n="a.summary">
-            Дундговийн малчны гэр бүлд төрж, монгол уртын дууны төлөөлөл болсон — ард түмнийхээ
-            саналаар “Зууны манлай дуучин”-оор өргөмжлөгдсөн.
+            Дундговийн малчны гэр бүлд төрж, монгол уртын дууны төлөөлөл болсон — шуранхай хэмээх
+            чимэглэлийг шинэ түвшинд хөгжүүлж, өөрийн гэсэн дуулгын хэв маягийг бий болгосон.
           </p>
 
           <ol class="timeline">
@@ -141,7 +141,7 @@
             </li>
             <li class="timeline__item">
               <time class="timeline__year" datetime="1946">1946</time>
-              <p data-i18n="a.1946">Арван таван настайдаа нийслэлд болсон Хувьсгалын ойн баярт
+              <p data-i18n="a.1946">Идэр залуу насандаа нийслэлд болсон Хувьсгалын ойн баярт
                 <em>“Идэр жинчин”</em> дуугаар тайзнаа хөл тавьсан.</p>
             </li>
             <!-- 1949 is the one year both timelines carry: the point where the two strands
@@ -161,8 +161,14 @@
             </li>
             <li class="timeline__item">
               <time class="timeline__year" datetime="1969">1969</time>
-              <p data-i18n="a.1969">Ардын жүжигчин цол хүртсэн. 1990 он хүртэл Улсын дуу бүжгийн
-                чуулгын гоцлол дуучин.</p>
+              <p data-i18n="a.1969">Ардын жүжигчин цол хүртсэн.</p>
+            </li>
+            <!-- Split from the old combined 1969+1990 entry: the "one year per entry" rule the
+                 rest of this timeline follows means a single <time datetime> shouldn't carry two
+                 different years. Flagged by the archive-director review (2026-09). -->
+            <li class="timeline__item">
+              <time class="timeline__year" datetime="1990">1990</time>
+              <p data-i18n="a.1990">Улсын дуу бүжгийн чуулгын гоцлол дуучнаар ажиллаж дуусав.</p>
             </li>
             <li class="timeline__item">
               <time class="timeline__year" datetime="1993">1993</time>
@@ -267,14 +273,19 @@
             </li>
             <!-- VERIFY BEFORE WIDE LAUNCH: see the note above the 1971 entry -- same single
                  source (Zindaa.mn), same "not yet checked against family/Foundation records"
-                 caveat, applies to both 1980 and 1987 here. -->
+                 caveat, applies to both entries below. Split into two -- one year per entry,
+                 matching the rest of this timeline -- per the archive-director review (2026-09),
+                 which is the same fix applied to the 1969/1990 split in Branch A. -->
             <li class="timeline__item">
-              <time class="timeline__year" datetime="1987">1987</time>
-              <p data-i18n="b.1987">1980 онд Зохиолчдын эвлэлийн шагнал, 1987 онд Д.Нацагдоржийн
-                нэрэмжит шагнал хүртэв.</p>
+              <time class="timeline__year" datetime="1980">1980</time>
+              <p data-i18n="b.1980">Монголын Зохиолчдын Эвлэлийн шагнал хүртэв.</p>
             </li>
             <li class="timeline__item">
-              <span class="timeline__year" data-i18n="b.works.year">Түүвэр зохиол</span>
+              <time class="timeline__year" datetime="1987">1987</time>
+              <p data-i18n="b.1987">Д.Нацагдоржийн нэрэмжит шагнал хүртэв.</p>
+            </li>
+            <li class="timeline__item">
+              <span class="timeline__year" data-i18n="b.works.year">Амьдралынхаа туршид</span>
               <p data-i18n="b.works"><em>“Мөнх зул”</em>, <em>“Аадрын дараа”</em>,
                 <em>“Цэрэг эрийн дууль”</em>, <em>“Замбага ягаан цэцэг”</em>, <em>“Өглөө”</em>,
                 <em>“Нэг голынхон”</em> зэрэг өгүүллэг, тууж.</p>
@@ -295,6 +306,12 @@
     <div class="container convergence__inner">
       <p class="eyebrow" data-i18n="c.eyebrow">Хоёр салаа нийлэх цэг</p>
       <h2 data-i18n="c.title">Дуулах уламжлал, бичих уламжлал — нэг сан.</h2>
+      <!-- VERIFY BEFORE WIDE LAUNCH: the archive-director review (2026-09) flagged that Norovbanzad
+           died Dec 2002 and Banzragch "a year after his wife" (b.2003, exact month unresolved) --
+           so it's currently unstated whether the Foundation was established while Banzragch was
+           still alive or only after both had died. The wording below doesn't assert either way,
+           but the exact founding month and who was involved in founding it should come from the
+           Foundation's own records, not be inferred from these two dates. -->
       <p class="convergence__lede" data-i18n="c.lede">
         Норовбанзад сан 2003 онд Намжилын Норовбанзад, Намсрайн Банзрагч нарын өв, дурсгалыг
         цаашид уламжлуулах зорилгоор байгуулагдсан. Одоогоор Норовбанзадын охин, хуульч, түүхийн
