@@ -39,14 +39,14 @@ window.I18N_EN = {
 
   // ---- Branches intro ----
   'branches.eyebrow': 'Two histories',
-  'branches.title': 'Norovbanzad was a singer, Banzragch a writer. They married in 1949.',
-  'branches.note': 'Norovbanzad brought <em>urtiin duu</em>, the long song, to the world. Banzragch put Mongolian life into writing. The Foundation preserves the legacy of both.',
+  'branches.title': 'Two lives, running in parallel',
+  'branches.note': 'Norovbanzad brought <em>urtiin duu</em>, the long song, to the world. Banzragch put Mongolian life into writing.',
 
   // ---- Branch A: Norovbanzad ----
   'a.eyebrow': 'Branch One — The Voice',
   'a.name': 'Namjilyn Norovbanzad',
   'a.meta': '1931–2002 · Long song (<em>urtiin duu</em>)',
-  'a.summary': 'Born to a herding family in Dundgovi, she became the leading voice of the Mongolian long song — advancing its signature shuranhai ornamentation and establishing a singing style distinctly her own.',
+  'a.summary': 'She became the leading voice of the Mongolian long song — advancing its signature shuranhai ornamentation and establishing a singing style distinctly her own.',
   'a.portrait.caption': '[PLACEHOLDER: caption — what this photograph shows, and when.]',
   'a.1931': 'Born 10 December at Ulaan Ovoo, Dundgovi province, daughter of the herders Damdin and Namjil.',
   'a.1940': 'Entered school at nine. She sang so constantly that her classmates called her <em>Duuchin shar</em>.',
@@ -66,7 +66,7 @@ window.I18N_EN = {
   'b.eyebrow': 'Branch Two — The Word',
   'b.name': 'Namsrain Banzragch',
   'b.meta': '1925–2003 · Prose, drama',
-  'b.summary': 'A writer from Zavkhan and a laureate of the D. Natsagdorj Prize, he spent six decades setting Mongolian life — the road, the steppe, the ordinary household — into literature.',
+  'b.summary': 'For over sixty years, he set Mongolian life — the road, the steppe, the ordinary household — into literature.',
   'b.portrait.caption': '[PLACEHOLDER: caption — what this photograph shows, and when.]',
   'b.1925': 'Born in Aldarkhan sum, Zavkhan province.',
   'b.1940': 'Began publishing short fiction — one of the earliest, <em>Jiriin khuukhnuud</em>.',
@@ -87,7 +87,7 @@ window.I18N_EN = {
   // ---- Convergence / Foundation ----
   'c.eyebrow': 'About the Foundation',
   'c.title': 'What we do',
-  'c.lede': 'The Norovbanzad Foundation was established in 2003 to carry forward the legacy of Namjilyn Norovbanzad and Namsrain Banzragch. It is chaired by Norovbanzad’s daughter, lawyer and historian Dr. B. Delgermaa. The Foundation works in two directions: keeping the long song alive as a living art, and preserving literature that reflects Mongolian life as a written heritage. Below, three programmes support that work — one for each strand, and a shared archive that holds both.',
+  'c.lede': 'Chaired by Norovbanzad’s daughter, lawyer and historian Dr. B. Delgermaa, the Foundation works in two directions: keeping the long song alive as a living art, and preserving literature that reflects Mongolian life as a written heritage.',
   'c.stat1': 'Singers taught',
   'c.stat2': 'Recordings preserved',
   'c.stat3': 'Titles republished',
@@ -151,7 +151,7 @@ window.I18N_EN = {
   // ---- Contact ----
   'ct.eyebrow': 'Contact',
   'ct.title': 'Get in touch.',
-  'ct.body': 'For archive and research enquiries, performance and teaching requests, publishing rights, or orders while the shop is closed.',
+  'ct.body': 'Fill out the form below, or write to us directly.',
   'ct.name': 'Name',
   'ct.email': 'Email',
   'ct.subject': 'Subject',
