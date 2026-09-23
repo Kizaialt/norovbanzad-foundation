@@ -21,7 +21,7 @@
 
 window.I18N_EN = {
   // ---- Document / chrome ----
-  'doc.title': 'Norovbanzad Foundation — The Song and the Word',
+  'doc.title': 'Norovbanzad Foundation',
   'nav.song': 'Her Song',
   'nav.word': 'His Writing',
   'nav.foundation': 'The Foundation',
@@ -33,14 +33,14 @@ window.I18N_EN = {
 
   // ---- Hero ----
   'hero.eyebrow': 'The Norovbanzad Foundation',
-  'hero.title': 'The Song<br>and the Word.',
-  'hero.lede': 'Two lives in one household, and two of Mongolia’s great arts. The long song of Namjilyn Norovbanzad and the literature of Namsrain Banzragch, carried forward to this day as a single inheritance.',
+  'hero.title': 'The Legacy of Norovbanzad and Banzragch',
+  'hero.lede': 'The long song of Namjilyn Norovbanzad, and the literature of Namsrain Banzragch — one family’s legacy. The Norovbanzad Foundation preserves and shares it.',
   'hero.scroll': 'Scroll to explore',
 
   // ---- Branches intro ----
-  'branches.eyebrow': 'Where the strand divides',
-  'branches.title': 'She sang the steppe. He wrote it. They married in 1949.',
-  'branches.note': 'For more than half a century their two crafts grew side by side — a voice that carried <em>urtiin duu</em> to the world, and a pen that set Mongolian life into prose. The Foundation exists because neither strand is complete without the other.',
+  'branches.eyebrow': 'Two histories',
+  'branches.title': 'Norovbanzad was a singer, Banzragch a writer. They married in 1949.',
+  'branches.note': 'Norovbanzad brought <em>urtiin duu</em>, the long song, to the world. Banzragch put Mongolian life into writing. The Foundation preserves the legacy of both.',
 
   // ---- Branch A: Norovbanzad ----
   'a.eyebrow': 'Branch One — The Voice',
@@ -85,8 +85,8 @@ window.I18N_EN = {
   'b.2003': 'Died one year after his wife. His novels, novellas, and memoir remain part of Mongolian literature’s heritage.',
 
   // ---- Convergence / Foundation ----
-  'c.eyebrow': 'Where the two strands meet',
-  'c.title': 'One foundation, for a sung tradition and a written one.',
+  'c.eyebrow': 'About the Foundation',
+  'c.title': 'What we do',
   'c.lede': 'The Norovbanzad Foundation was established in 2003 to carry forward the legacy of Namjilyn Norovbanzad and Namsrain Banzragch. It is chaired by Norovbanzad’s daughter, lawyer and historian Dr. B. Delgermaa. The Foundation works in two directions: keeping the long song alive as a living art, and preserving literature that reflects Mongolian life as a written heritage. Below, three programmes support that work — one for each strand, and a shared archive that holds both.',
   'c.stat1': 'Singers taught',
   'c.stat2': 'Recordings preserved',
