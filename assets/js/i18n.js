@@ -46,7 +46,7 @@ window.I18N_EN = {
   'a.eyebrow': 'Branch One — The Voice',
   'a.name': 'Namjilyn Norovbanzad',
   'a.meta': '1931–2002 · Long song (<em>urtiin duu</em>)',
-  'a.summary': 'She became the leading voice of the Mongolian long song — advancing its signature shuranhai ornamentation and establishing a singing style distinctly her own.',
+  'a.summary': 'She became the leading voice of the Mongolian long song — advancing its signature shuranhai ornamentation and establishing a singing style distinctly her own. Over more than fifty years she performed on stages from La Scala to the Metropolitan, and the public crowned her the “Queen of Urtiin Duu.”',
   'a.portrait.caption': '[PLACEHOLDER: caption — what this photograph shows, and when.]',
   'a.1931': 'Born 10 December at Ulaan Ovoo, Dundgovi province, daughter of the herders Damdin and Namjil.',
   'a.1940': 'Entered school at nine. She sang so constantly that her classmates called her <em>Duuchin shar</em>.',
@@ -60,7 +60,7 @@ window.I18N_EN = {
   'a.1993': 'Awarded the Fukuoka Asian Culture Prize, Japan.',
   'a.1997': 'Named Hero of Labour of Mongolia, in recognition of introducing the long song to the world.',
   'a.2000': 'Voted Singer of the Century by the people of Mongolia.',
-  'a.2002': 'Died 21 December. Her recordings of <em>Uyakhan zambuutivyn naran</em>, <em>Seruun saikhan khangai</em> and <em>Zeergentiin shil</em> remain the reference performances of the form.',
+  'a.2002': 'Died 21 December. Her recordings of <em>Uyakhan zambuutivyn naran</em>, <em>Seruun saikhan khangai</em> and <em>Zeergentiin shil</em> remain the reference performances of the form; the last is registered in UNESCO’s Golden Fund archive.',
 
   // ---- Branch B: Banzragch ----
   'b.eyebrow': 'Branch Two — The Word',
