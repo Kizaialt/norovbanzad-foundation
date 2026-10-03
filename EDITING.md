@@ -1,7 +1,27 @@
 # Editing the site
 
-Everything on this site is plain text files. There is no database, no login, no build step.
-You edit a file, save it, and the change is live the next time the site is uploaded.
+## Easiest way: edit in the browser (for Foundation members)
+
+Open the **edit link** you were sent (it ends in `#edit=…`). The page switches to edit mode:
+
+- Click any text and type. Changes save by themselves; the bar at the bottom says
+  **Бүгд хадгалагдсан** when everything is saved, and the **Хадгалах** button saves at once.
+- Switch **МН / EN** at the top to edit the other language.
+- **Бөглөөгүй: N · Дараагийнх** jumps to the next `[БАЙРШУУЛАХ: …]` gap, with just that gap
+  selected so typing replaces it.
+- **Цэс, товчны бичвэр** edits the menu, buttons and form labels, which cannot be clicked in place.
+- Enter does not start a new paragraph (use Shift+Enter for a line break). Pasted text arrives as
+  plain text.
+- Not editable here: photos, layout, adding or removing timeline rows.
+
+Treat the link like a password: anyone holding it can change the text. Visitors who open the
+normal site address see the changes but get no editor. Setup, changing the passcode, and making
+the edits permanent in the files are in `firebase/README.md`.
+
+## Editing the files directly
+
+Everything on this site is plain text files. There is no build step. You edit a file, save it,
+and the change is live the next time the site is uploaded.
 
 Use any plain-text editor. [VS Code](https://code.visualstudio.com/) is free and will colour the
 code so it is easier to see what you are doing. **Do not use Microsoft Word** — it inserts

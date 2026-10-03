@@ -148,6 +148,7 @@ window.I18N_EN = {
   'shop.p1.title': '[PLACEHOLDER: album or recording title]',
   'shop.p1.desc': '[PLACEHOLDER: format, length, and what is on it.]',
   'shop.p2.eyebrow': 'Book',
+  'shop.p2.title': 'Zam',
   'shop.p2.desc': '[PLACEHOLDER: edition, language(s), page count, publisher.]',
   'shop.p3.eyebrow': 'Book',
   'shop.p3.title': '[PLACEHOLDER: collected short fiction]',

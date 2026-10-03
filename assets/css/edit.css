@@ -1,0 +1,94 @@
+/* Edit mode only. Loaded by live.js when a member opens the edit link; visitors never get it. */
+
+.nf-editing body { padding-bottom: 76px; }
+
+/* Every editable piece of text shows a faint dashed outline so members can see what can be changed. */
+.nf-editing [data-nf-edit] {
+  outline: 1px dashed rgba(143, 115, 40, 0.45);
+  outline-offset: 3px;
+  cursor: text;
+  min-width: 1.5em;
+}
+.nf-editing [data-nf-edit]:hover { outline-color: var(--color-gold-deep); background: rgba(201, 162, 75, 0.08); }
+.nf-editing [data-nf-edit]:focus {
+  outline: 2px solid var(--color-gold-deep);
+  background: rgba(201, 162, 75, 0.14);
+}
+.nf-editing [data-nf-edit]:empty::before { content: "…"; opacity: 0.45; }
+
+/* Text that still has a [БАЙРШУУЛАХ: …] gap is tinted, so unfinished spots stand out. */
+.nf-editing .nf-ph { background: rgba(201, 162, 75, 0.28); border-radius: 2px; }
+
+/* Form fields are inert while editing, so their labels can be edited by clicking. */
+.nf-editing .contact-form input,
+.nf-editing .contact-form select,
+.nf-editing .contact-form textarea,
+.nf-editing .contact-form button,
+.nf-editing .product button { pointer-events: none; }
+
+/* ---- Toolbar ---- */
+.nf-bar {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 1000;
+  display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px;
+  padding: 10px 16px;
+  background: var(--color-indigo-deep); color: var(--color-bg);
+  font: 500 0.875rem/1.3 var(--font-body);
+  box-shadow: 0 -2px 14px rgba(0, 0, 0, 0.25);
+}
+.nf-bar__title { font-weight: 600; color: var(--color-gold-soft); }
+.nf-bar__hint { color: rgba(250, 247, 242, 0.75); }
+.nf-bar__hint b { color: var(--color-gold-soft); }
+.nf-status { margin-left: auto; color: rgba(250, 247, 242, 0.8); }
+.nf-status[data-kind="dirty"] { color: var(--color-gold); }
+.nf-status[data-kind="error"] { color: #f0a3a3; }
+.nf-status[data-kind="saved"] { color: #a8d5a2; }
+
+.nf-btn {
+  font: inherit; cursor: pointer;
+  padding: 7px 14px; border-radius: 3px;
+  border: 1px solid rgba(250, 247, 242, 0.35);
+  background: transparent; color: var(--color-bg);
+}
+.nf-btn:hover:not(:disabled) { border-color: var(--color-gold); color: var(--color-gold-soft); }
+.nf-btn:disabled { opacity: 0.45; cursor: default; }
+.nf-btn--quiet { border-color: transparent; color: rgba(250, 247, 242, 0.75); text-decoration: underline; text-underline-offset: 3px; }
+.nf-btn--primary { background: var(--color-gold); border-color: var(--color-gold); color: var(--color-indigo-deep); font-weight: 600; }
+.nf-btn--primary:hover:not(:disabled) { background: var(--color-gold-soft); color: var(--color-indigo-deep); }
+
+/* ---- Dialogs ---- */
+.nf-veil {
+  position: fixed; inset: 0; z-index: 1100;
+  display: flex; align-items: center; justify-content: center;
+  padding: 16px;
+  background: rgba(22, 29, 48, 0.62);
+}
+.nf-dialog {
+  width: min(420px, 100%); max-height: 86vh; overflow: auto;
+  padding: 24px; border-radius: 4px;
+  background: var(--color-bg); color: var(--color-ink);
+  font: 400 1rem/1.5 var(--font-body);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.35);
+}
+.nf-dialog--wide { width: min(560px, 100%); }
+.nf-dialog h2 { margin: 0 0 16px; font: 600 1.25rem/1.2 var(--font-display); }
+.nf-dialog h2 small { font: 500 0.8rem var(--font-body); color: var(--color-ink-faint); }
+.nf-dialog label { display: block; margin: 0 0 12px; font-size: 0.875rem; color: var(--color-ink-soft); }
+.nf-dialog input {
+  display: block; width: 100%; margin-top: 4px; padding: 9px 11px;
+  font: inherit; color: var(--color-ink);
+  border: 1px solid var(--color-line-strong); border-radius: 3px; background: #fff;
+}
+.nf-dialog input:focus { outline: 2px solid var(--color-gold-deep); outline-offset: 1px; }
+.nf-note { margin: 0 0 12px; font-size: 0.8rem; color: var(--color-ink-faint); }
+.nf-error { min-height: 1.2em; margin: 0 0 8px; font-size: 0.875rem; color: var(--color-maroon); }
+.nf-rows { margin-bottom: 16px; }
+.nf-rows label { margin-bottom: 8px; }
+.nf-dialog .nf-btn--primary { width: 100%; }
+
+@media (max-width: 1000px) { .nf-bar__hint { display: none; } }
+
+@media (max-width: 640px) {
+  .nf-editing body { padding-bottom: 132px; }
+  .nf-bar__hint { display: none; }
+  .nf-status { margin-left: 0; width: 100%; }
+}

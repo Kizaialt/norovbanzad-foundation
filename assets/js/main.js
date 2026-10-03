@@ -1,5 +1,4 @@
-// Chrome: language switching, nav toggle, footer year, contact form.
-// Does not touch the helix visual (see helix.js).
+// Chrome: language switching, saved edits, nav toggle, footer year, contact form.
 (function () {
   'use strict';
 
@@ -72,9 +71,7 @@
 
     try { localStorage.setItem(STORAGE_KEY, lang); } catch (e) { /* private mode: ignore */ }
 
-    // Column heights change with translated text, so the helix has to re-measure. helix.js
-    // rebuilds on resize; dispatching one here reuses that path rather than duplicating it.
-    window.dispatchEvent(new Event('resize'));
+    syncMailto();
   }
 
   function initialLang() {
@@ -89,7 +86,88 @@
     return 'mn';
   }
 
+  // =========================================================================
+  // Saved edits (see live.js)
+  //
+  // Text edited by Foundation members is stored remotely, keyed "<scope>__<key>" where scope is
+  // mn, en, or all (language-neutral values such as years and prices). Everything coming back
+  // from there is run through sanitize() before it reaches innerHTML, so a leaked edit
+  // passcode can change wording but can never inject script.
+  // =========================================================================
+
+  var OVR_CACHE = 'nf-ovr';
+  var ALLOWED_HREF = /^(#|mailto:|https?:\/\/)/i;
+  var DROP_TAGS = { SCRIPT: 1, STYLE: 1, TEMPLATE: 1, IFRAME: 1, OBJECT: 1, EMBED: 1, NOSCRIPT: 1 };
+
+  function sanitize(html) {
+    var doc = new DOMParser().parseFromString('<body>' + html + '</body>', 'text/html');
+    var out = document.createElement('div');
+    (function walk(src, dst) {
+      Array.prototype.forEach.call(src.childNodes, function (n) {
+        if (n.nodeType === 3) {
+          dst.appendChild(document.createTextNode(n.nodeValue.replace(/\u00a0/g, ' ')));
+          return;
+        }
+        if (n.nodeType !== 1 || DROP_TAGS[n.tagName]) return;
+        var tag = n.tagName === 'I' ? 'EM' : n.tagName;
+        if (tag === 'BR') {
+          dst.appendChild(document.createElement('br'));
+        } else if (tag === 'EM') {
+          var em = document.createElement('em');
+          walk(n, em);
+          dst.appendChild(em);
+        } else if (tag === 'A' && ALLOWED_HREF.test(n.getAttribute('href') || '')) {
+          var a = document.createElement('a');
+          a.setAttribute('href', n.getAttribute('href'));
+          if (/^https?:/i.test(a.getAttribute('href'))) a.setAttribute('rel', 'noopener');
+          walk(n, a);
+          dst.appendChild(a);
+        } else if (tag === 'SPAN' && n.className === 'product__title-alt') {
+          var sp = document.createElement('span');
+          sp.className = 'product__title-alt';
+          walk(n, sp);
+          dst.appendChild(sp);
+        } else {
+          walk(n, dst);   // unknown tag: drop the wrapper, keep its text
+        }
+      });
+    })(doc.body, out);
+    return out.innerHTML;
+  }
+
+  function attrEsc(s) { return String(s).replace(/["\\]/g, '\\$&'); }
+
+  function setShared(key, val) {
+    document.querySelectorAll('[data-edit="' + attrEsc(key) + '"]').forEach(function (el) {
+      el.textContent = val;
+      if (el.tagName === 'TIME' && /^\d{4}$/.test(val.trim())) el.setAttribute('datetime', val.trim());
+    });
+  }
+
+  function applyOverrides(map) {
+    Object.keys(map).forEach(function (id) {
+      var cut = id.indexOf('__');
+      if (cut < 1) return;
+      var scope = id.slice(0, cut), key = id.slice(cut + 2), val = String(map[id]);
+      if (scope === 'mn') mnSnapshot[key] = sanitize(val);
+      else if (scope === 'en') EN[key] = sanitize(val);
+      else if (scope === 'all') setShared(key, val);
+    });
+  }
+
+  // A typed-in address in the contact block becomes a working mailto link.
+  function syncMailto() {
+    document.querySelectorAll('a[href^="mailto:"][data-i18n]').forEach(function (a) {
+      var text = a.textContent.trim();
+      if (/^\S+@\S+\.\S+$/.test(text)) a.setAttribute('href', 'mailto:' + text);
+    });
+  }
+
   snapshot();
+  try {
+    var cached = JSON.parse(localStorage.getItem(OVR_CACHE) || 'null');
+    if (cached && typeof cached === 'object') applyOverrides(cached);
+  } catch (e) { /* no cache, or private mode: baseline text is shown */ }
   var currentLang = initialLang();
   if (currentLang !== 'mn') applyLang(currentLang);
   else applyLang('mn'); // sets aria-pressed and lang consistently
@@ -108,6 +186,31 @@
     if (currentLang === 'en' && EN[key]) return EN[key];
     return fallbackMn;
   }
+
+  // Hooks for live.js (shared edits + the in-page editor).
+  window.NF = {
+    sanitize: sanitize,
+    lang: function () { return currentLang; },
+    // Apply a full set of saved edits and redraw the page in the current language.
+    apply: function (map) { applyOverrides(map); applyLang(currentLang); },
+    // Local-first update while someone is typing: keeps the language switch and any other
+    // element carrying the same key (nav and footer share keys) in step without a redraw.
+    setLocal: function (scope, key, html, exceptEl) {
+      if (scope === 'mn') mnSnapshot[key] = html;
+      else if (scope === 'en') EN[key] = html;
+      else return;
+      document.querySelectorAll('[data-i18n="' + attrEsc(key) + '"]').forEach(function (el) {
+        if (el !== exceptEl) el.innerHTML = html;
+      });
+    },
+    // The text a key shows right now, per language (used to record what was replaced).
+    current: function (scope, key) {
+      if (scope === 'mn') return mnSnapshot[key];
+      if (scope === 'en') return Object.prototype.hasOwnProperty.call(EN, key) ? EN[key] : mnSnapshot[key];
+      return undefined;
+    },
+    cacheKey: OVR_CACHE
+  };
 
   // =========================================================================
   // Nav toggle

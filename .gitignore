@@ -1,3 +1,12 @@
 
 # Generated reference — rebuild with: python tools/copy-deck.py
 copy-deck.html
+
+# Firebase: the generated rules and edit link contain the passcode -- never commit these.
+firebase/firestore.rules
+firebase/.edit-secret
+.firebase/
+firebase-debug.log
+firestore-debug.log
+
+__pycache__/

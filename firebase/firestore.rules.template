@@ -1,0 +1,28 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // The website reads the saved texts, so anyone may read them.
+    match /texts/{id} {
+      allow read: if true;
+
+      // A text can only be written in the same commit as a "proof" document carrying the edit
+      // passcode (see assets/js/live.js). The proof is never readable, so the passcode is never
+      // exposed, and nothing can be deleted.
+      allow create, update: if id.matches('^(mn|en|all)__[A-Za-z0-9._-]{1,100}$')
+        && getAfter(/databases/$(database)/documents/proofs/$(id)).data.pass == '__PASSCODE__'
+        && request.resource.data.keys().hasOnly(['html', 'by', 'at', 'prev'])
+        && request.resource.data.html is string
+        && request.resource.data.html.size() < 8000;
+      allow delete: if false;
+    }
+
+    match /proofs/{id} {
+      allow create, update: if id.matches('^(mn|en|all)__[A-Za-z0-9._-]{1,100}$')
+        && request.resource.data.keys().hasOnly(['pass'])
+        && request.resource.data.pass is string
+        && request.resource.data.pass.size() < 200;
+      allow read, delete: if false;
+    }
+  }
+}
