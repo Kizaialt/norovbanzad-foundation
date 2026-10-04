@@ -2,10 +2,16 @@
 
 ## Easiest way: edit in the browser (for Foundation members)
 
-Open the **edit link** you were sent (it ends in `#edit=…`). The page switches to edit mode:
+Open the **edit link** you were sent (it ends in `#edit=…`). Editing starts straight away; there is
+nothing to sign in to and no name to give.
 
-- Click any text and type. Changes save by themselves; the bar at the bottom says
-  **Бүгд хадгалагдсан** when everything is saved, and the **Хадгалах** button saves at once.
+- Click any text and type. **Every change saves by itself** about a second after you stop typing;
+  the bar at the bottom says **Бүгд хадгалагдсан** when everything is saved. A **Хадгалах** /
+  **Дахин оролдох** button only appears if something is waiting or could not be saved.
+- Nothing is lost if the connection drops or you close the tab: unsaved changes are kept in your
+  browser and sent the next time you open the link.
+- Every save is also kept permanently in a history, and copied to a backup several times a day, so an
+  overwritten or mistaken edit can always be brought back (see `firebase/README.md`).
 - Switch **МН / EN** at the top to edit the other language.
 - **Бөглөөгүй: N · Дараагийнх** jumps to the next `[БАЙРШУУЛАХ: …]` gap, with just that gap
   selected so typing replaces it.

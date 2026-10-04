@@ -13,7 +13,20 @@ static files on GitHub Pages.
   (`firestore.rules.template`). The passcode lives only in the deployed rules and in the link.
 - Everything read back from the database is sanitised before it reaches the page, so a leaked
   passcode can change wording but cannot inject script.
+- No name is asked for. Each browser gets a short random label ("Гишүүн #k3f2") recorded with its
+  saves, enough to tell members apart.
 - Each saved text records who changed it, when, and what it replaced (`by`, `at`, `prev`).
+- **Nothing typed is lost.** A change is held in the browser until the server confirms it, and is
+  sent again on the next visit if the tab closed first.
+
+## How edits are protected
+
+| Layer | What it protects against | Where |
+|---|---|---|
+| Browser queue | connection drops, closing the tab mid-edit | the member's browser, until saved |
+| Version history | an edit overwritten or made by mistake | database collection `history`: one permanent entry per save, add-only (the passcode can add entries but never change or delete them); private, readable only by the project owner |
+| Scheduled backup | the database itself being lost or emptied | branch `content-backups` on GitHub: `texts.json`, refreshed every four hours by the "Back up edited texts" workflow; every version stays in git history |
+| Download button | a personal copy | **Нөөц татах** in the edit bar |
 
 ## What exists
 
@@ -36,6 +49,9 @@ APIs, create a Firestore database, put the project id in `live-config.js`, then 
 | Change the passcode (e.g. someone left) | `python tools/set-passcode.py --deploy`, then send the new link (rules take a minute or two to reach every server) |
 | Make the edits permanent in the site files | `python tools/pull-edits.py`, review `git diff`, commit, push |
 | Download a backup of all edits | the **Нөөц татах** button in the edit toolbar |
+| Back up right now | GitHub: Actions, "Back up edited texts", Run workflow. Or `python tools/backup-texts.py` |
+| See every past version of every text | `node tools/export-history.js` writes `history-<date>.json` (needs `firebase login`) |
+| Bring back an older wording | find it in the history file or in an earlier commit of `content-backups`, then open the edit link and type it in again |
 | Undo a bad edit | the previous wording is stored in the database as `prev`; or retype it in edit mode |
 
 ## Limits worth knowing

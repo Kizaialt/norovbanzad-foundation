@@ -2,8 +2,11 @@
 //
 // Visitors:   every page load fetches the Foundation's saved edits and applies them over the
 //             text built into index.html. If this fails, the built-in text simply stays.
-// Members:    opening the page with #edit=<passcode> switches on edit mode. Any text can be
-//             clicked and typed over; changes save automatically for everyone.
+// Members:    opening the page with #edit=<passcode> switches on edit mode at once. Any text can
+//             be clicked and typed over; every change saves by itself for everyone.
+//
+// Nothing typed is lost: each change is also queued in the browser until the server confirms it,
+// and every confirmed save leaves a permanent copy in an append-only history.
 //
 // Storage is a Firestore database used through its plain REST API (no SDK). Reads are public;
 // writes only pass the database rules when they carry the edit passcode. See firebase/README.md.
@@ -24,6 +27,7 @@
     other: 'Цэс, товчны бичвэр',
     backup: 'Нөөц татах',
     save: 'Хадгалах',
+    retry: 'Дахин оролдох',
     exit: 'Гарах',
     dirty: 'Хадгалагдаагүй өөрчлөлт байна',
     saving: 'Хадгалж байна…',
@@ -31,14 +35,12 @@
     error: 'Хадгалж чадсангүй, дахин оролдоно',
     dlgTitle: 'Засварлах эрх',
     pass: 'Нууц код',
-    name: 'Таны нэр',
-    nameNote: 'Өөрчлөлт бүр дээр таны нэр тэмдэглэгдэнэ.',
     go: 'Эхлэх',
     wrong: 'Нууц код буруу байна.',
     net: 'Холбогдож чадсангүй. Интернэтээ шалгаад дахин оролдоно уу.',
     otherTitle: 'Цэс, товч, маягтын бичвэр',
     close: 'Хаах',
-    defaultName: 'Гишүүн'
+    member: 'Гишүүн'
   };
 
   var DB = (CFG.endpoint || 'https://firestore.googleapis.com') + '/v1/projects/' + CFG.projectId + '/databases/(default)/documents';
@@ -47,7 +49,9 @@
   var PING_ID = 'all__ping';
 
   var SS_PASS = 'nf-pass';
-  var LS_NAME = 'nf-editor';
+  var LS_WHO = 'nf-editor-id';
+  var LS_PENDING = 'nf-pending';
+  var DEBOUNCE = 700;
   var remote = {};          // id -> saved html, as last seen on the server
 
   function store(kind, key, val) {
@@ -62,6 +66,17 @@
   // =========================================================================
   // Server calls
   // =========================================================================
+
+  // Who made a change, recorded with every save. No name is asked for: each browser gets a short
+  // random label ("Гишүүн #k3f2"), enough to tell members apart in the history.
+  function who() {
+    var id = store('local', LS_WHO);
+    if (!id) {
+      id = Math.random().toString(36).slice(2, 6);
+      store('local', LS_WHO, id);
+    }
+    return S.member + ' #' + id;
+  }
 
   // A stalled connection must fail (and be retried) rather than hang the editor on "saving".
   function timedFetch(url, opts) {
@@ -94,28 +109,36 @@
     return page();
   }
 
-  // One text is saved as two writes in a single commit: a "proof" holding the passcode, and the
-  // text itself. The database rules accept the text only if the proof carries the right
-  // passcode. The proof is never readable, so the passcode is never exposed.
-  function commit(id, html, prev) {
-    return withRetry(function () { return commitOnce(id, html, prev); }, 3);
+  // One save is a single commit of three writes: a "proof" holding the passcode, the text itself,
+  // and a permanent copy in the history. The database rules accept the text and the history entry
+  // only if the proof carries the right passcode. The proof is never readable, so the passcode is
+  // never exposed.
+  function commit(id, html, prev, skipHistory) {
+    return withRetry(function () { return commitOnce(id, html, prev, !skipHistory); }, 2).catch(function (err) {
+      if (!err.denied || skipHistory) throw err;
+      // Still refused: save the text on its own rather than lose it (for instance if the history
+      // rule has not reached every server yet). A wrong passcode fails here too, and is reported.
+      return withRetry(function () { return commitOnce(id, html, prev, false); }, 2);
+    });
   }
 
-  // "Refused" is retried above: right after a rules change, servers can briefly disagree, and one
-  // stray refusal must not look like a wrong passcode.
-  function commitOnce(id, html, prev) {
+  // "Refused" is retried: right after a rules change, servers can briefly disagree, and one stray
+  // refusal must not look like a wrong passcode.
+  function commitOnce(id, html, prev, withHistory) {
     var pass = store('session', SS_PASS);
-    var body = {
-      writes: [
-        { update: { name: DOC_ROOT + '/proofs/' + id, fields: { pass: { stringValue: pass || '' } } } },
-        { update: { name: DOC_ROOT + '/texts/' + id, fields: {
-          html: { stringValue: html },
-          by: { stringValue: store('local', LS_NAME) || S.defaultName },
-          at: { stringValue: new Date().toISOString() },
-          prev: { stringValue: prev || '' }
-        } } }
-      ]
+    var at = new Date().toISOString();
+    var fields = {
+      html: { stringValue: html },
+      by: { stringValue: who() },
+      at: { stringValue: at },
+      prev: { stringValue: prev || '' }
     };
+    var writes = [
+      { update: { name: DOC_ROOT + '/proofs/' + id, fields: { pass: { stringValue: pass || '' } } } },
+      { update: { name: DOC_ROOT + '/texts/' + id, fields: fields } }
+    ];
+    if (withHistory) writes.push({ update: { name: DOC_ROOT + '/history/' + id + '~' + Date.now(), fields: fields } });
+    var body = { writes: writes };
     return timedFetch(DB + ':commit' + (KEYQ ? '?' + KEYQ : ''), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -181,10 +204,36 @@
   var PLACEHOLDER = /\[(?:БАЙРШУУЛАХ|PLACEHOLDER|ТОО|ОН|САР|ОГНОО|ҮНЭ|CREDIT)[^\]]*\]/;
   var SKIP_INLINE = 'title, option, button, .sr-only, .skip-link';
 
-  var pending = {};         // id -> { scope, key, html, prev }
+  var pending = {};         // id -> { scope, key, html, prev }; mirrored to localStorage until saved
   var timer = null, retry = null, inflight = null;
   var bar = null, statusEl = null, countEl = null, langEl = null, saveBtn = null;
   var started = false;
+
+  function persistPending() {
+    var ids = Object.keys(pending);
+    store('local', LS_PENDING, ids.length ? JSON.stringify(pending) : null);
+  }
+
+  function setPending(id, job) {
+    pending[id] = job;
+    persistPending();
+  }
+
+  function restorePending() {
+    var saved = {};
+    try { saved = JSON.parse(store('local', LS_PENDING) || '{}') || {}; } catch (e) { saved = {}; }
+    Object.keys(saved).forEach(function (id) {
+      var j = saved[id];
+      if (!j || typeof j.html !== 'string' || typeof j.key !== 'string') return;
+      pending[id] = j;
+      if (j.scope === 'all') {
+        document.querySelectorAll('[data-edit="' + j.key.replace(/["\\]/g, '\\$&') + '"]').forEach(function (n) { n.textContent = j.html; });
+      } else {
+        window.NF.setLocal(j.scope, j.key, j.html, null);
+      }
+    });
+    if (Object.keys(pending).length) { setStatus('dirty'); flush(); updateFill(); }
+  }
 
   function el(tag, attrs, html) {
     var n = document.createElement(tag);
@@ -203,50 +252,44 @@
     if (started) return;
     var pass = urlPass || store('session', SS_PASS);
     if (urlPass) history.replaceState(null, '', location.pathname + location.search);
+    if (!pass) return askAccess(function (p) { startEdit(p); });
 
-    if (!pass || !store('local', LS_NAME)) {
-      return askAccess(pass, function (p) { startEdit(p); });
-    }
     store('session', SS_PASS, pass);
+    started = true;
+    store('session', 'nf-edit', '1');
+    buildEditor();                    // editing is available immediately
+    restorePending();                 // anything typed earlier that never reached the server
 
-    // Check the passcode before showing editing tools that would only fail to save.
-    commit(PING_ID, 'ok', '').then(function () {
-      started = true;
-      store('session', 'nf-edit', '1');
-      buildEditor();
-    }, function (err) {
-      if (err.denied) {
-        store('session', SS_PASS, null);
-        askAccess(null, function (p) { startEdit(p); }, S.wrong);
-      } else {
-        askAccess(pass, function (p) { startEdit(p); }, S.net);
-      }
-    });
+    // Check the passcode quietly in the background, so a stale link is caught at once and not
+    // only when the first change fails to save.
+    commit(PING_ID, 'ok', '', true).catch(function (err) { if (err.denied) reauth(S.wrong); });
   }
 
-  function askAccess(pass, done, message) {
+  // The passcode was missing or refused: ask for it. Anything typed meanwhile stays queued.
+  function reauth(message) {
+    store('session', SS_PASS, null);
+    setStatus('error');
+    askAccess(function (p) { store('session', SS_PASS, p); flush(); }, message);
+  }
+
+  function askAccess(done, message) {
     if (document.querySelector('.nf-veil')) return;      // a dialog is already open
     var veil = el('div', { 'class': 'nf-veil' });
     var dlg = el('form', { 'class': 'nf-dialog', role: 'dialog', 'aria-modal': 'true', 'aria-label': S.dlgTitle });
     dlg.innerHTML =
       '<h2>' + esc(S.dlgTitle) + '</h2>' +
-      (pass ? '' : '<label>' + esc(S.pass) + '<input name="pass" type="password" autocomplete="off" required></label>') +
-      '<label>' + esc(S.name) + '<input name="name" type="text" autocomplete="name"></label>' +
-      '<p class="nf-note">' + esc(S.nameNote) + '</p>' +
+      '<label>' + esc(S.pass) + '<input name="pass" type="password" autocomplete="off" required></label>' +
       '<p class="nf-error" role="alert">' + (message ? esc(message) : '') + '</p>' +
       '<button type="submit" class="nf-btn nf-btn--primary">' + esc(S.go) + '</button>';
     var passInput = dlg.querySelector('[name="pass"]');
-    var nameInput = dlg.querySelector('[name="name"]');
-    nameInput.value = store('local', LS_NAME) || '';
     veil.appendChild(dlg);
     document.body.appendChild(veil);
-    (passInput || nameInput).focus();
+    passInput.focus();
     dlg.addEventListener('submit', function (e) {
       e.preventDefault();
-      store('local', LS_NAME, nameInput.value.trim() || S.defaultName);
-      var p = pass || passInput.value.trim();
+      var p = passInput.value.trim();
       document.body.removeChild(veil);
-      done(p);
+      if (started) { done(p); } else { startEdit(p); }
     });
   }
 
@@ -298,9 +341,12 @@
     new MutationObserver(function () { updateLang(); updateFill(); })
       .observe(document.documentElement, { attributes: true, attributeFilter: ['lang'] });
 
-    window.addEventListener('beforeunload', function (e) {
-      if (Object.keys(pending).length) { e.preventDefault(); e.returnValue = ''; }
+    // Leaving the page (closing the tab, switching away) sends whatever is still waiting. If that
+    // cannot finish, the queue is kept in the browser and sent the next time the link is opened.
+    document.addEventListener('visibilitychange', function () {
+      if (document.visibilityState === 'hidden') flush();
     });
+    window.addEventListener('pagehide', function () { flush(); });
 
     // Pick up other members' edits while this page stays open, but never mid-sentence.
     setInterval(function () {
@@ -315,7 +361,12 @@
       n.setAttribute('contenteditable', 'true');
       n.setAttribute('spellcheck', 'false');
       n.setAttribute('data-nf-edit', '');
+      if (n._nfBefore === undefined) n._nfBefore = currentValue(n);
     });
+  }
+
+  function currentValue(n) {
+    return n.hasAttribute('data-edit') ? n.textContent.trim() : window.NF.sanitize(n.innerHTML);
   }
 
   function isEditable(n) { return n && n.nodeType === 1 && n.hasAttribute('data-nf-edit'); }
@@ -332,7 +383,7 @@
     var n = editableOf(e.target);
     if (!n) return;
     lastEditable = n;
-    n._nfBefore = scopeOf(n) === 'all' ? n.textContent.trim() : window.NF.sanitize(n.innerHTML);
+    if (!pending[scopeOf(n) + '__' + keyOf(n)]) n._nfBefore = currentValue(n);
   }
 
   function onInput(e) {
@@ -343,10 +394,11 @@
     window.NF.setLocal(scope, key, html, n);
     var id = scope + '__' + key;
     var job = pending[id];
-    pending[id] = { scope: scope, key: key, html: html, prev: job ? job.prev : (n._nfBefore || '') };
+    setPending(id, { scope: scope, key: key, html: html, prev: job ? job.prev : (n._nfBefore || '') });
+    n._nfBefore = html;                 // the next change after this one is saved replaces this wording
     setStatus('dirty');
     clearTimeout(timer);
-    timer = setTimeout(flush, 1500);
+    timer = setTimeout(flush, DEBOUNCE);
     n.classList.toggle('nf-ph', PLACEHOLDER.test(n.textContent));
     updateFill();
   }
@@ -386,39 +438,40 @@
     if (!statusEl) return;
     statusEl.textContent = S[kind] || '';
     statusEl.setAttribute('data-kind', kind);
-    if (saveBtn) saveBtn.disabled = kind === 'saved';
+    if (saveBtn) {
+      // Saving is automatic; the button only appears when something is waiting or has failed.
+      saveBtn.hidden = kind === 'saved' || kind === 'saving';
+      saveBtn.textContent = kind === 'error' ? S.retry : S.save;
+    }
   }
 
+  // Everything waiting is sent at once (each text is independent). Safe to call at any time.
   function flush() {
     clearTimeout(timer);
     clearTimeout(retry);
     if (inflight) return inflight;
-    var ids = Object.keys(pending);
-    if (!ids.length) { setStatus('saved'); return Promise.resolve(); }
+    var jobs = Object.keys(pending).map(function (id) { return { id: id, job: pending[id] }; });
+    if (!jobs.length) { setStatus('saved'); return Promise.resolve(); }
     setStatus('saving');
-    inflight = ids.reduce(function (chain, id) {
-      return chain.then(function () {
-        var job = pending[id];
-        return commit(id, job.html, job.prev).then(function () {
-          if (pending[id] === job) delete pending[id];
-          remote[id] = job.html;
-        });
-      });
-    }, Promise.resolve()).then(function () {
+    inflight = Promise.all(jobs.map(function (x) {
+      return commit(x.id, x.job.html, x.job.prev).then(function () {
+        if (pending[x.id] === x.job) delete pending[x.id];
+        remote[x.id] = x.job.html;
+        return null;
+      }, function (err) { return err; });
+    })).then(function (errors) {
       inflight = null;
+      persistPending();
       writeCache();
-      if (Object.keys(pending).length) return flush();
-      setStatus('saved');
-    }, function (err) {
-      inflight = null;
-      if (err.denied) {
-        store('session', SS_PASS, null);
+      var failed = errors.filter(Boolean);
+      if (failed.some(function (e) { return e.denied; })) return reauth(S.wrong);
+      if (failed.length) {
         setStatus('error');
-        askAccess(null, function (p) { store('session', SS_PASS, p); flush(); }, S.wrong);
+        retry = setTimeout(flush, 8000);
         return;
       }
-      setStatus('error');
-      retry = setTimeout(flush, 8000);
+      if (Object.keys(pending).length) return flush();      // changed while saving
+      setStatus('saved');
     });
     return inflight;
   }
@@ -512,10 +565,10 @@
         if (r.key === 'doc.title') document.title = input.value;
         var id = scope + '__' + r.key;
         var job = pending[id];
-        pending[id] = { scope: scope, key: r.key, html: html, prev: job ? job.prev : r.text };
+        setPending(id, { scope: scope, key: r.key, html: html, prev: job ? job.prev : r.text });
         setStatus('dirty');
         clearTimeout(timer);
-        timer = setTimeout(flush, 1500);
+        timer = setTimeout(flush, DEBOUNCE);
       });
       row.appendChild(input);
       box.appendChild(row);

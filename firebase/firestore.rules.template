@@ -17,6 +17,19 @@ service cloud.firestore {
       allow delete: if false;
     }
 
+    // Every save also leaves a permanent copy here, so an overwritten or mistaken edit can always
+    // be recovered. Append-only: the passcode lets you add entries, never change or delete them,
+    // and the public cannot read them (only the project owner can, from the console or the API).
+    // The entry id is "<text id>~<time>", and the proof for <text id> is in the same commit.
+    match /history/{hid} {
+      allow create: if hid.matches('^(mn|en|all)__[A-Za-z0-9._-]{1,100}~[0-9]{10,16}$')
+        && getAfter(/databases/$(database)/documents/proofs/$(hid.split('~')[0])).data.pass == '__PASSCODE__'
+        && request.resource.data.keys().hasOnly(['html', 'by', 'at', 'prev'])
+        && request.resource.data.html is string
+        && request.resource.data.html.size() < 8000;
+      allow read, update, delete: if false;
+    }
+
     match /proofs/{id} {
       allow create, update: if id.matches('^(mn|en|all)__[A-Za-z0-9._-]{1,100}$')
         && request.resource.data.keys().hasOnly(['pass'])

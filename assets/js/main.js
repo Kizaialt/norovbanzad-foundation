@@ -199,6 +199,7 @@
       if (scope === 'mn') mnSnapshot[key] = html;
       else if (scope === 'en') EN[key] = html;
       else return;
+      if (scope !== currentLang) return;     // the other language is not on screen
       document.querySelectorAll('[data-i18n="' + attrEsc(key) + '"]').forEach(function (el) {
         if (el !== exceptEl) el.innerHTML = html;
       });
