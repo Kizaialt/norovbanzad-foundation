@@ -58,5 +58,8 @@ APIs, create a Firestore database, put the project id in `live-config.js`, then 
 
 - Anyone holding the edit link can change any text (not the layout). Treat it like a password.
 - Last save wins if two members change the same text at the same moment.
+- GitHub pauses scheduled workflows in a repository with no pushes for 60 days. If the backups stop,
+  open the Actions tab and re-enable "Back up edited texts" (or push any change).
+- History and the backup branch keep every version; there is no automatic clean-up.
 - Photos, the layout, and adding or removing timeline rows are not editable here.
 - Free tier: 50,000 reads and 20,000 writes a day; a small site stays far below that.
