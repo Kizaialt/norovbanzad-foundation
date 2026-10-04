@@ -15,24 +15,25 @@ static files on GitHub Pages.
   passcode can change wording but cannot inject script.
 - Each saved text records who changed it, when, and what it replaced (`by`, `at`, `prev`).
 
-## One-time setup
+## What exists
 
-```bash
-firebase login
-firebase projects:create <project-id> --display-name "Norovbanzad Foundation"
-firebase use <project-id>
-firebase firestore:databases:create "(default)" --location asia-southeast1
-python tools/set-passcode.py --deploy      # prints the edit link
-```
+- Google Cloud project `norovbanzad-fnd-9x3rc` (owner: the account that signed in with
+  `firebase login`), with a Firestore database `(default)` in `asia-southeast1` on the free tier.
+- It is a plain Google Cloud project, not yet a "Firebase project": the Firebase console would ask
+  for its terms to be accepted, which is not needed for any of this. The access rules are published
+  straight to Google's rules API by `tools/deploy-rules.js`.
+- `assets/js/live-config.js` holds the project id. Public reads need no API key.
 
-Then put the project id in `assets/js/live-config.js` (`projectId`) and push.
+To rebuild from nothing: create a Google Cloud project, enable the Firestore and Firebase Rules
+APIs, create a Firestore database, put the project id in `live-config.js`, then run
+`python tools/set-passcode.py --deploy`.
 
 ## Day to day
 
 | Job | How |
 |---|---|
 | Send the link to a member | `firebase/.edit-secret` holds the passcode; the link is `<site>/#edit=<passcode>` |
-| Change the passcode (e.g. someone left) | `python tools/set-passcode.py --deploy`, send the new link |
+| Change the passcode (e.g. someone left) | `python tools/set-passcode.py --deploy`, then send the new link (rules take a minute or two to reach every server) |
 | Make the edits permanent in the site files | `python tools/pull-edits.py`, review `git diff`, commit, push |
 | Download a backup of all edits | the **Нөөц татах** button in the edit toolbar |
 | Undo a bad edit | the previous wording is stored in the database as `prev`; or retype it in edit mode |

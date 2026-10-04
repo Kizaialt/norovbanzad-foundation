@@ -98,6 +98,12 @@
   // text itself. The database rules accept the text only if the proof carries the right
   // passcode. The proof is never readable, so the passcode is never exposed.
   function commit(id, html, prev) {
+    return withRetry(function () { return commitOnce(id, html, prev); }, 3);
+  }
+
+  // "Refused" is retried above: right after a rules change, servers can briefly disagree, and one
+  // stray refusal must not look like a wrong passcode.
+  function commitOnce(id, html, prev) {
     var pass = store('session', SS_PASS);
     var body = {
       writes: [
@@ -131,8 +137,15 @@
     try { localStorage.setItem(window.NF.cacheKey, JSON.stringify(remote)); } catch (e) { /* ignore */ }
   }
 
+  function withRetry(fn, tries) {
+    return fn().catch(function (err) {
+      if (tries <= 1) throw err;
+      return new Promise(function (r) { setTimeout(r, 1500); }).then(function () { return withRetry(fn, tries - 1); });
+    });
+  }
+
   function refresh(force) {
-    return listAll().then(function (map) {
+    return withRetry(listAll, 3).then(function (map) {
       var changed = JSON.stringify(map) !== JSON.stringify(remote);
       remote = map;
       writeCache();

@@ -7,7 +7,7 @@ Run from the project root:
 
 It writes firebase/firestore.rules (never committed), saves the passcode to
 firebase/.edit-secret (never committed), and prints the edit link to send to members.
-Add --deploy to publish the new rules straight away (needs `firebase login` first).
+Add --deploy to publish the new rules straight away (needs `firebase login` first and Node).
 
 Changing the passcode locks out anyone holding the old link: send them the new one.
 """
@@ -52,9 +52,9 @@ def main():
     print()
 
     if deploy:
-        subprocess.check_call(["firebase", "deploy", "--only", "firestore:rules"], cwd=ROOT, shell=(os.name == "nt"))
+        subprocess.check_call(["node", os.path.join("tools", "deploy-rules.js")], cwd=ROOT)
     else:
-        print("Not published yet. Run:  firebase deploy --only firestore:rules")
+        print("Not published yet. Run:  node tools/deploy-rules.js")
 
 
 if __name__ == "__main__":
