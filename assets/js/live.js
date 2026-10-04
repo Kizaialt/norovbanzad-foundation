@@ -158,13 +158,20 @@
   // does not trigger a redraw.
   try { remote = JSON.parse(store('local', window.NF.cacheKey) || '{}') || {}; } catch (e) { remote = {}; }
 
-  var hash = location.hash.match(/^#edit(?:=(.*))?$/);
-  var editRequested = !!hash || store('session', 'nf-edit') === '1';
-
-  refresh(false).then(function () {
+  // The edit link is the site address plus #edit=<passcode>. It is read on load, and again when
+  // the address changes, because pasting it into a tab that already has the site open only changes
+  // the # part and does not reload the page.
+  function editFromLink() {
+    var m = location.hash.match(/^#edit(?:=(.*))?$/);
+    if (!m && store('session', 'nf-edit') !== '1') return;
     var linkPass = null;
-    try { linkPass = hash && hash[1] ? decodeURIComponent(hash[1]) : null; } catch (e) { linkPass = hash[1]; }
-    if (editRequested) startEdit(linkPass);
+    try { linkPass = m && m[1] ? decodeURIComponent(m[1]) : null; } catch (e) { linkPass = m[1]; }
+    startEdit(linkPass);
+  }
+
+  refresh(false).then(editFromLink);
+  window.addEventListener('hashchange', function () {
+    if (/^#edit/.test(location.hash)) editFromLink();
   });
 
   // =========================================================================
@@ -218,6 +225,7 @@
   }
 
   function askAccess(pass, done, message) {
+    if (document.querySelector('.nf-veil')) return;      // a dialog is already open
     var veil = el('div', { 'class': 'nf-veil' });
     var dlg = el('form', { 'class': 'nf-dialog', role: 'dialog', 'aria-modal': 'true', 'aria-label': S.dlgTitle });
     dlg.innerHTML =
